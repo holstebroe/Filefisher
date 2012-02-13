@@ -1,0 +1,3 @@
+source/_ReSharper.Filefisher
+*.suo
+source/FilefisherLib/obj/*
