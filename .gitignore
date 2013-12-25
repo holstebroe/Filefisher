@@ -4,3 +4,4 @@ source/FilefisherLib/obj/*
 **/bin/Debug/*
 source/packages
 **/obj/Debug/*
+*.user
