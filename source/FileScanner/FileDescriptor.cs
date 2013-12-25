@@ -5,9 +5,9 @@ using System.Text;
 
 namespace FileScanner
 {
-    public class FileFeatures
+    public class FileDescriptor
     {
-        public FileFeatures(string fileName)
+        public FileDescriptor(string fileName)
         {
             FileName = fileName;
         }

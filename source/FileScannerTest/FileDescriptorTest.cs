@@ -4,14 +4,14 @@ using NUnit.Framework;
 namespace FileScannerTest
 {
     [TestFixture]
-    public class FileFeaturesTest
+    public class FileDescriptorTest
     {
         private const string EinsteinJpegFileName = "albert-einstein.jpg";
 
         [Test]
         public void ConstructorSetsFileName()
         {
-            var sut = new FileFeatures(EinsteinJpegFileName);
+            var sut = new FileDescriptor(EinsteinJpegFileName);
 
             Assert.That(sut.FileName, Is.EqualTo(EinsteinJpegFileName));
         }
