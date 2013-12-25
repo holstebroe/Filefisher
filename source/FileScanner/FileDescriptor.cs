@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace FileScanner
 {
@@ -17,10 +14,13 @@ namespace FileScanner
 
         public long FileSize { get; private set; }
 
+        public DateTime CreateTime { get; private set; }
+
         public void UpdateStats()
         {
             var fileInfo = new FileInfo(FileName);
             FileSize = fileInfo.Length;
+            CreateTime = fileInfo.CreationTimeUtc;
         }
     }
 }
