@@ -16,11 +16,14 @@ namespace FileScanner
 
         public DateTime CreateTime { get; private set; }
 
+        public DateTime ModifyTime { get; private set; }
+
         public void UpdateStats()
         {
             var fileInfo = new FileInfo(FileName);
             FileSize = fileInfo.Length;
             CreateTime = fileInfo.CreationTimeUtc;
+            ModifyTime = fileInfo.LastWriteTimeUtc;
         }
     }
 }

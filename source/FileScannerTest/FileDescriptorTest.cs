@@ -10,13 +10,14 @@ namespace FileScannerTest
     {
         private const string EinsteinJpegFileName = "albert-einstein.jpg";
 
-        private static readonly DateTime EinsteinJpegCreateTime = new DateTime(2013, 12, 24, 12, 34, 56,
-                                                                               DateTimeKind.Utc);
+        private static readonly DateTime EinsteinJpegCreateTime = new DateTime(2013, 12, 24, 12, 34, 56, 123, DateTimeKind.Utc);
+        private static readonly DateTime EinsteinJpegModifyTime = new DateTime(2013, 12, 25, 21, 28, 48, 222, DateTimeKind.Utc);
 
         [TestFixtureSetUp]
         public void CreateTimeSetup()
         {
             File.SetCreationTimeUtc(EinsteinJpegFileName, EinsteinJpegCreateTime);
+            File.SetLastWriteTimeUtc(EinsteinJpegFileName, EinsteinJpegModifyTime);
         }
 
         [Test]
@@ -59,6 +60,23 @@ namespace FileScannerTest
             sut.UpdateStats();
 
             Assert.That(sut.CreateTime, Is.EqualTo(EinsteinJpegCreateTime));
+        }
+
+        [Test]
+        public void ConstructorDoesNotSetModifyTime()
+        {
+            var sut = new FileDescriptor(EinsteinJpegFileName);
+
+            Assert.That(sut.ModifyTime, Is.EqualTo(default(DateTime)));
+        }
+
+        [Test]
+        public void UpdateStatsSetsModifyTimeUtc()
+        {
+            var sut = new FileDescriptor(EinsteinJpegFileName);
+            sut.UpdateStats();
+
+            Assert.That(sut.ModifyTime, Is.EqualTo(EinsteinJpegModifyTime));
         }
 
    }
