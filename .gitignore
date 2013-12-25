@@ -1,3 +1,6 @@
 source/_ReSharper.Filefisher
 *.suo
 source/FilefisherLib/obj/*
+**/bin/Debug/*
+source/packages
+**/obj/Debug/*
