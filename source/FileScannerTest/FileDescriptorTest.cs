@@ -79,5 +79,23 @@ namespace FileScannerTest
             Assert.That(sut.ModifyTime, Is.EqualTo(EinsteinJpegModifyTime));
         }
 
+        [Test]
+        public void ConstructorDoesNotSetContentHash()
+        {
+            var sut = new FileDescriptor(EinsteinJpegFileName);
+
+            Assert.That(sut.ContentHash, Is.Null);            
+        }
+
+        [Test]
+        public void UpdateContentHashSetsContentHash()
+        {
+            var sut = new FileDescriptor(EinsteinJpegFileName);
+            sut.UpdateContentHash();
+
+            Assert.That(sut.ContentHash, Is.EqualTo("da328f7dc002932174e144c911e61a913e4edfe9"));
+        }
+
+
    }
 }
