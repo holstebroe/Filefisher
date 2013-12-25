@@ -35,17 +35,8 @@ namespace FileScanner
             using (var stream = File.OpenRead(FileName))
             {
                 SHA1 sha = new SHA1CryptoServiceProvider();
-                ContentHash = StringEncodeHash(sha.ComputeHash(stream));
+                ContentHash = Convert.ToBase64String(sha.ComputeHash(stream));
             }
-        }
-
-        private static string StringEncodeHash(byte[] hashcode)
-        {
-            var hex = new StringBuilder(hashcode.Length * 2);
-            foreach (var b in hashcode)
-                hex.AppendFormat("{0:x2}", b);
-            return hex.ToString();
-
         }
     }
 }

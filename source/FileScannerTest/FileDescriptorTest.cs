@@ -88,12 +88,12 @@ namespace FileScannerTest
         }
 
         [Test]
-        public void UpdateContentHashSetsContentHash()
+        public void UpdateContentHashSetsSHA1ContentHashInBase64()
         {
             var sut = new FileDescriptor(EinsteinJpegFileName);
             sut.UpdateContentHash();
 
-            Assert.That(sut.ContentHash, Is.EqualTo("da328f7dc002932174e144c911e61a913e4edfe9"));
+            Assert.That(sut.ContentHash, Is.EqualTo("2jKPfcACkyF04UTJEeYakT5O3+k="));
         }
 
 
