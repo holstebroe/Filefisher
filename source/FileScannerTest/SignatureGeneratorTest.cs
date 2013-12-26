@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace FileScannerTest
 {
     [TestFixture]
-    public class FileDescriptorTest
+    public class SignatureGeneratorTest
     {
         private const string ResourceFolderName = "Resources";
         private const string EinsteinJpegFileName = ResourceFolderName + @"\albert-einstein.jpg";
@@ -21,44 +21,60 @@ namespace FileScannerTest
             File.SetLastWriteTimeUtc(EinsteinJpegFileName, EinsteinJpegModifyTime);
         }
 
+
         [Test]
-        public void ConstructorSetsFileName()
+        public void UpdateStatsSetsFileSize()
         {
             var sut = new FileDescriptor(EinsteinJpegFileName);
+            new SignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.FileName, Is.EqualTo(EinsteinJpegFileName));
+            Assert.That(sut.FileSize, Is.EqualTo(52439));
         }
 
         [Test]
-        public void ConstructorDoesNotSetFileSize()
+        public void UpdateStatsSetsCreateTimeUtc()
         {
             var sut = new FileDescriptor(EinsteinJpegFileName);
+            new SignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.FileSize, Is.EqualTo(0));
-        }
- 
-        [Test]
-        public void ConstructorDoesNotSetCreateTime()
-        {
-            var sut = new FileDescriptor(EinsteinJpegFileName);
-
-            Assert.That(sut.CreateTime, Is.EqualTo(default(DateTime)));
+            Assert.That(sut.CreateTime, Is.EqualTo(EinsteinJpegCreateTime));
         }
 
         [Test]
-        public void ConstructorDoesNotSetModifyTime()
+        public void UpdateStatsSetsModifyTimeUtc()
         {
             var sut = new FileDescriptor(EinsteinJpegFileName);
+            new SignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.ModifyTime, Is.EqualTo(default(DateTime)));
+            Assert.That(sut.ModifyTime, Is.EqualTo(EinsteinJpegModifyTime));
         }
 
         [Test]
-        public void ConstructorDoesNotSetContentHash()
+        public void IsFolderIsFalseForFile()
         {
             var sut = new FileDescriptor(EinsteinJpegFileName);
+            new SignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.ContentHash, Is.Null);            
+            Assert.That(sut.IsFolder, Is.False);
         }
-   }
+
+        [Test]
+        public void IsFolderIsTrueForFolder()
+        {
+            var sut = new FileDescriptor(ResourceFolderName);
+            new SignatureGenerator().UpdateStats(sut);
+
+            Assert.That(sut.IsFolder, Is.True);
+        }
+
+        [Test]
+        public void UpdateContentHashSetsSHA1ContentHashInBase64()
+        {
+            var sut = new FileDescriptor(EinsteinJpegFileName);
+            new SignatureGenerator().UpdateContentHash(sut);
+
+            Assert.That(sut.ContentHash, Is.EqualTo("2jKPfcACkyF04UTJEeYakT5O3+k="));
+        }
+
+    }
 }
