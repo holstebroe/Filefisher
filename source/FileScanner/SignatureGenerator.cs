@@ -18,24 +18,24 @@ namespace FileScanner
         /// </summary>
         public void UpdateStats(FileDescriptor descriptor)
         {
-            var attributes = File.GetAttributes(descriptor.FileName);
+            var attributes = File.GetAttributes(descriptor.Path);
             descriptor.IsFolder = attributes.HasFlag(FileAttributes.Directory);
             FileSystemInfo fileSystemInfo;
             if (descriptor.IsFolder)
             {
-                fileSystemInfo = new DirectoryInfo(descriptor.FileName);
+                fileSystemInfo = new DirectoryInfo(descriptor.Path);
                 var childDescriptors = GetChildDescriptors(descriptor).ToList();
                 foreach (var childDescriptor in childDescriptors)
                 {
                     UpdateStats(childDescriptor);
                 }
-                descriptor.FileSize = childDescriptors.Sum(x => x.FileSize);
+                descriptor.Size = childDescriptors.Sum(x => x.Size);
             }
             else
             {
-                var fileInfo = new FileInfo(descriptor.FileName);
+                var fileInfo = new FileInfo(descriptor.Path);
                 fileSystemInfo = fileInfo;
-                descriptor.FileSize = fileInfo.Length;
+                descriptor.Size = fileInfo.Length;
 
             }
             descriptor.CreateTime = fileSystemInfo.CreationTimeUtc;
@@ -44,12 +44,12 @@ namespace FileScanner
 
         private IEnumerable<FileDescriptor> GetChildDescriptors(FileDescriptor descriptor)
         {
-            return Directory.EnumerateFileSystemEntries(descriptor.FileName).Select(entry => new FileDescriptor(entry));
+            return Directory.EnumerateFileSystemEntries(descriptor.Path).Select(entry => new FileDescriptor(entry));
         }
 
         public void UpdateContentHash(FileDescriptor descriptor)
         {
-            using (var stream = File.OpenRead(descriptor.FileName))
+            using (var stream = File.OpenRead(descriptor.Path))
             {
                 SHA1 sha = new SHA1CryptoServiceProvider();
                 descriptor.ContentHash = Convert.ToBase64String(sha.ComputeHash(stream));

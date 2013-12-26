@@ -28,7 +28,7 @@ namespace FileScannerTest
             var sut = new FileDescriptor(EinsteinJpegFileName);
             new SignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.FileSize, Is.EqualTo(52439));
+            Assert.That(sut.Size, Is.EqualTo(52439));
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace FileScannerTest
             var sut = new FileDescriptor(ResourceFolderName);
             new SignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.FileSize, Is.EqualTo(52439 + 12));
+            Assert.That(sut.Size, Is.EqualTo(52439 + 12));
         }
 
         [Test]

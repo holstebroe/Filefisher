@@ -7,14 +7,14 @@ namespace FileScanner
 {
     public class FileDescriptor
     {
-        public FileDescriptor(string fileName)
+        public FileDescriptor(string path)
         {
-            FileName = fileName;
+            Path = path;
         }
 
-        public string FileName { get; set; }
+        public string Path { get; set; }
 
-        public long FileSize { get; set; }
+        public long Size { get; set; }
 
         public DateTime CreateTime { get; set; }
 
