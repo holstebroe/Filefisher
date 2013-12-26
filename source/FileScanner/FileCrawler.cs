@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
-namespace FilefisherLib
+namespace FileScanner
 {
-    public class FileScanner
+
+    public class FileCrawler
     {
         public void ScanDirectory(string baseDirectory)
         {

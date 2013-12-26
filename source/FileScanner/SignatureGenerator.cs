@@ -12,6 +12,10 @@ namespace FileScanner
     /// </summary>
     public class SignatureGenerator
     {
+        /// <summary>
+        /// Updates file system properties for a file descriptor.
+        /// If the file descriptor is a folder, some properties will be based on sub-folders and files.
+        /// </summary>
         public void UpdateStats(FileDescriptor descriptor)
         {
             var attributes = File.GetAttributes(descriptor.FileName);
