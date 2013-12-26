@@ -22,12 +22,26 @@ namespace FileScanner
 
         public string ContentHash { get; private set; }
 
+        public bool IsFolder { get; private set; }
+
         public void UpdateStats()
         {
-            var fileInfo = new FileInfo(FileName);
-            FileSize = fileInfo.Length;
-            CreateTime = fileInfo.CreationTimeUtc;
-            ModifyTime = fileInfo.LastWriteTimeUtc;
+            var attributes = File.GetAttributes(FileName);
+            IsFolder = attributes.HasFlag(FileAttributes.Directory);
+            FileSystemInfo fileSystemInfo;
+            if (IsFolder)
+            {
+                fileSystemInfo = new DirectoryInfo(FileName);
+            }
+            else
+            {
+                var fileInfo = new FileInfo(FileName);
+                fileSystemInfo = fileInfo;
+                FileSize = fileInfo.Length;
+
+            }
+            CreateTime = fileSystemInfo.CreationTimeUtc;
+            ModifyTime = fileSystemInfo.LastWriteTimeUtc;
         }
 
         public void UpdateContentHash()
