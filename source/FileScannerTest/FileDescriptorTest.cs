@@ -11,16 +11,6 @@ namespace FileScannerTest
         private const string ResourcesPath = "Resources";
         private const string EinsteinJpegPath = ResourcesPath + @"\albert-einstein.jpg";
 
-        private static readonly DateTime EinsteinJpegCreateTime = new DateTime(2013, 12, 24, 12, 34, 56, 123, DateTimeKind.Utc);
-        private static readonly DateTime EinsteinJpegModifyTime = new DateTime(2013, 12, 25, 21, 28, 48, 222, DateTimeKind.Utc);
-
-        [TestFixtureSetUp]
-        public void CreateTimeSetup()
-        {
-            File.SetCreationTimeUtc(EinsteinJpegPath, EinsteinJpegCreateTime);
-            File.SetLastWriteTimeUtc(EinsteinJpegPath, EinsteinJpegModifyTime);
-        }
-
         [Test]
         public void ConstructorSetsPath()
         {
