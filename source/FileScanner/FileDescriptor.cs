@@ -10,9 +10,12 @@ namespace FileScanner
         public FileDescriptor(string path)
         {
             Path = path;
+            Name = System.IO.Path.GetFileName(path);
         }
 
         public string Path { get; set; }
+
+        public string Name { get; set; }
 
         public long Size { get; set; }
 

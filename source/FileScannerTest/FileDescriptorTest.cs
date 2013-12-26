@@ -9,7 +9,8 @@ namespace FileScannerTest
     public class FileDescriptorTest
     {
         private const string ResourcesPath = "Resources";
-        private const string EinsteinJpegPath = ResourcesPath + @"\albert-einstein.jpg";
+        private const string EinsteinJpegFileName = @"albert-einstein.jpg";
+        private const string EinsteinJpegPath = ResourcesPath + @"\" + EinsteinJpegFileName;
 
         [Test]
         public void ConstructorSetsPath()
@@ -17,6 +18,14 @@ namespace FileScannerTest
             var sut = new FileDescriptor(EinsteinJpegPath);
 
             Assert.That(sut.Path, Is.EqualTo(EinsteinJpegPath));
+        }
+
+        [Test]
+        public void ConstructorExtractsNameFromProvidedPath()
+        {
+            var sut = new FileDescriptor(EinsteinJpegPath);
+
+            Assert.That(sut.Name, Is.EqualTo(EinsteinJpegFileName));
         }
 
         [Test]
