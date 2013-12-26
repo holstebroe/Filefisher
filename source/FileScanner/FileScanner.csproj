@@ -40,11 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JetbrainsAnnotations.cs" />
     <Compile Include="FileDescriptor.cs" />
     <Compile Include="FileCrawler.cs" />
     <Compile Include="IFileDatabase.cs" />
+    <Compile Include="IHashGenerator.cs" />
     <Compile Include="MemoryFileDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sha1HashGenerator.cs" />
     <Compile Include="SignatureGenerator.cs" />
     <Compile Include="StatSignatureGenerator.cs" />
   </ItemGroup>
