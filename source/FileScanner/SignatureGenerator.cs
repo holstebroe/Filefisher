@@ -20,6 +20,12 @@ namespace FileScanner
             if (descriptor.IsFolder)
             {
                 fileSystemInfo = new DirectoryInfo(descriptor.FileName);
+                var childDescriptors = GetChildDescriptors(descriptor).ToList();
+                foreach (var childDescriptor in childDescriptors)
+                {
+                    UpdateStats(childDescriptor);
+                }
+                descriptor.FileSize = childDescriptors.Sum(x => x.FileSize);
             }
             else
             {
@@ -30,6 +36,11 @@ namespace FileScanner
             }
             descriptor.CreateTime = fileSystemInfo.CreationTimeUtc;
             descriptor.ModifyTime = fileSystemInfo.LastWriteTimeUtc;
+        }
+
+        private IEnumerable<FileDescriptor> GetChildDescriptors(FileDescriptor descriptor)
+        {
+            return Directory.EnumerateFileSystemEntries(descriptor.FileName).Select(entry => new FileDescriptor(entry));
         }
 
         public void UpdateContentHash(FileDescriptor descriptor)
