@@ -8,11 +8,21 @@ namespace FileScanner
 {
     public class FileDescriptor
     {
-        public FileDescriptor(string path)
+        public FileDescriptor(string relativeFilePath)
         {
-            Path = path;
-            Name = System.IO.Path.GetFileName(path);
+            FullPath = System.IO.Path.GetFullPath(relativeFilePath);
+            Path = FullPath.Substring(FullPath.Length - relativeFilePath.Length);
+            Name = System.IO.Path.GetFileName(Path);
+
         }
+        public FileDescriptor(string basePath, string fullFilePath)
+        {
+            FullPath = fullFilePath;
+            Path = fullFilePath.Substring(basePath.Length);
+            Name = System.IO.Path.GetFileName(fullFilePath);
+        }
+
+        public string FullPath { get; set; }
 
         public string Path { get; set; }
 

@@ -25,22 +25,19 @@ namespace FileScanner
         /// </summary>
         public void UpdateStats(FileDescriptor descriptor)
         {
-            var attributes = File.GetAttributes(descriptor.Path);
+            var attributes = File.GetAttributes(descriptor.FullPath);
             descriptor.IsFolder = attributes.HasFlag(FileAttributes.Directory);
             FileSystemInfo fileSystemInfo;
             if (descriptor.IsFolder)
             {
-                fileSystemInfo = new DirectoryInfo(descriptor.Path);
-                var childDescriptors = GetChildDescriptors(descriptor).ToList();
-                foreach (var childDescriptor in childDescriptors)
-                {
-                    UpdateStats(childDescriptor);
-                }
-                descriptor.Size = childDescriptors.Sum(x => x.Size);
+                fileSystemInfo = new DirectoryInfo(descriptor.FullPath);
+
+                if (descriptor.Children != null)
+                    descriptor.Size = descriptor.Children.Sum(x => x.Size);
             }
             else
             {
-                var fileInfo = new FileInfo(descriptor.Path);
+                var fileInfo = new FileInfo(descriptor.FullPath);
                 fileSystemInfo = fileInfo;
                 descriptor.Size = fileInfo.Length;
 
@@ -49,11 +46,6 @@ namespace FileScanner
             descriptor.ModifyTime = fileSystemInfo.LastWriteTimeUtc;
 
             statSignatureGenerator.Generate(descriptor);
-        }
-
-        private IEnumerable<FileDescriptor> GetChildDescriptors(FileDescriptor descriptor)
-        {
-            return Directory.EnumerateFileSystemEntries(descriptor.Path).Select(entry => new FileDescriptor(entry));
         }
 
         public void UpdateContentHash(FileDescriptor descriptor)

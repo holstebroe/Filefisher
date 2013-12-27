@@ -72,15 +72,6 @@ namespace FileScannerTest
         }
 
         [Test]
-        public void FolderSizeIsSumOfSizeOfChildren()
-        {
-            var sut = new FileDescriptor(ResourcesPath);
-            CreateSignatureGenerator().UpdateStats(sut);
-
-            Assert.That(sut.Size, Is.EqualTo(52439 + 12));
-        }
-
-        [Test]
         public void UpdateContentHashSetsSHA1ContentHashInBase64()
         {
             var sut = new FileDescriptor(EinsteinJpegPath);

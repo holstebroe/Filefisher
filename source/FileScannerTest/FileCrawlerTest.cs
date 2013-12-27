@@ -34,5 +34,15 @@ namespace FileScannerTest
             var actual = database.GetAllDescriptors().Select(x => x.Path);
             Assert.That(actual, Is.EquivalentTo(expected));
         }
+
+        [Test]
+        public void FolderSizeIsSumOfSizeOfChildren()
+        {
+            var sut = new FileCrawler(new MemoryFileDatabase(), new SignatureGenerator(new SHA1HashGenerator()));
+            var rootDescriptor = sut.ScanDirectory(ResourcesPath);
+
+            Assert.That(rootDescriptor.Size, Is.EqualTo(52439 + 12));
+        }
+
     }
 }

@@ -34,6 +34,7 @@ namespace FileScanner
         private byte[] GenerateFolderSignature(FileDescriptor fileDescriptor)
         {
             var allChildBytes = new List<byte>();
+            if (fileDescriptor.Children == null) return null;
             foreach (var descriptor in fileDescriptor.Children)
             {
                 allChildBytes.AddRange(descriptor.StatHash);

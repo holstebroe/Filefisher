@@ -21,23 +21,26 @@ namespace FileScanner
         public FileDescriptor ScanDirectory(string baseDirectory)
         {
             var baseDirectoryInfo = new DirectoryInfo(baseDirectory);
-            var basePath = baseDirectoryInfo.Parent.FullName+ Path.DirectorySeparatorChar;
+            var basePath = baseDirectoryInfo.Parent.FullName;
+            if (basePath != Path.GetPathRoot(baseDirectory))
+                basePath += Path.DirectorySeparatorChar;
             return ScanDirectory(basePath, baseDirectoryInfo);            
         }
 
         private FileDescriptor ScanDirectory(string basePath, DirectoryInfo directoryInfo)
         {
-            var directoryDescriptor = new FileDescriptor(directoryInfo.FullName.Substring(basePath.Length));
-            fileDatabase.UpdateDescriptor(directoryDescriptor);
+            var directoryDescriptor = new FileDescriptor(basePath, directoryInfo.FullName);
 
             var descriptors = ScanFiles(basePath, directoryInfo);
             var subDirectories = directoryInfo.EnumerateDirectories("*.*", SearchOption.TopDirectoryOnly);
             foreach (var subDirectoryInfo in subDirectories)
             {
-                ScanDirectory(basePath, subDirectoryInfo);
-                descriptors.Add(directoryDescriptor);
+                var subDirectoryDescriptor = ScanDirectory(basePath, subDirectoryInfo);
+                descriptors.Add(subDirectoryDescriptor);
             }
             directoryDescriptor.Children = descriptors;
+            signatureGenerator.UpdateStats(directoryDescriptor);
+            fileDatabase.UpdateDescriptor(directoryDescriptor);
             return directoryDescriptor;
         }
 
@@ -47,7 +50,12 @@ namespace FileScanner
             var files = directoryInfo.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly);
             foreach (var fileInfo in files)
             {
-                var descriptor = new FileDescriptor(fileInfo.FullName.Substring(basePath.Length));
+                var descriptor = new FileDescriptor(basePath, fileInfo.FullName);
+                if (!File.Exists(descriptor.FullPath))
+                {
+                    Console.WriteLine("Could not open {0}", descriptor.FullPath);
+                    continue;
+                }
                 signatureGenerator.UpdateStats(descriptor);
                 fileDatabase.UpdateDescriptor(descriptor);
                 descriptors.Add(descriptor);

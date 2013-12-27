@@ -5,3 +5,4 @@ source/FilefisherLib/obj/*
 source/packages
 **/obj/Debug/*
 *.user
+**/obj/*
