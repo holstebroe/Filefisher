@@ -23,6 +23,8 @@ namespace FileScannerTest
         {
             var sut = new MemoryFileDatabase();
             var fixture = new Fixture();
+            fixture.Behaviors.Remove(fixture.Behaviors.OfType<ThrowingRecursionBehavior>().First());
+            fixture.Behaviors.Add(new NullRecursionBehavior(2));
             var descriptors = fixture.CreateMany<FileDescriptor>().ToList();
             foreach (var descriptor in descriptors)
             {

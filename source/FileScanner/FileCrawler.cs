@@ -18,25 +18,27 @@ namespace FileScanner
             this.signatureGenerator = signatureGenerator;
         }
 
-        public void ScanDirectory(string baseDirectory)
+        public FileDescriptor ScanDirectory(string baseDirectory)
         {
             var baseDirectoryInfo = new DirectoryInfo(baseDirectory);
             var basePath = baseDirectoryInfo.Parent.FullName+ Path.DirectorySeparatorChar;
-            ScanDirectory(basePath, baseDirectoryInfo);            
+            return ScanDirectory(basePath, baseDirectoryInfo);            
         }
 
-        private List<FileDescriptor> ScanDirectory(string basePath, DirectoryInfo directoryInfo)
+        private FileDescriptor ScanDirectory(string basePath, DirectoryInfo directoryInfo)
         {
+            var directoryDescriptor = new FileDescriptor(directoryInfo.FullName.Substring(basePath.Length));
+            fileDatabase.UpdateDescriptor(directoryDescriptor);
+
             var descriptors = ScanFiles(basePath, directoryInfo);
             var subDirectories = directoryInfo.EnumerateDirectories("*.*", SearchOption.TopDirectoryOnly);
             foreach (var subDirectoryInfo in subDirectories)
             {
-                var directoryDescriptor = new FileDescriptor(subDirectoryInfo.FullName.Substring(basePath.Length));
                 ScanDirectory(basePath, subDirectoryInfo);
-                fileDatabase.UpdateDescriptor(directoryDescriptor);
                 descriptors.Add(directoryDescriptor);
             }
-            return descriptors;
+            directoryDescriptor.Children = descriptors;
+            return directoryDescriptor;
         }
 
         private List<FileDescriptor> ScanFiles(string basePath, DirectoryInfo directoryInfo)

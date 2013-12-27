@@ -21,12 +21,16 @@ namespace FileScannerTest
             File.SetLastWriteTimeUtc(EinsteinJpegPath, EinsteinJpegModifyTime);
         }
 
+        private SignatureGenerator CreateSignatureGenerator()
+        {
+            return new SignatureGenerator(new SHA1HashGenerator());
+        }
 
         [Test]
         public void UpdateStatsSetsFileSize()
         {
             var sut = new FileDescriptor(EinsteinJpegPath);
-            new SignatureGenerator().UpdateStats(sut);
+            CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.Size, Is.EqualTo(52439));
         }
@@ -35,7 +39,7 @@ namespace FileScannerTest
         public void UpdateStatsSetsCreateTimeUtc()
         {
             var sut = new FileDescriptor(EinsteinJpegPath);
-            new SignatureGenerator().UpdateStats(sut);
+            CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.CreateTime, Is.EqualTo(EinsteinJpegCreateTime));
         }
@@ -44,7 +48,7 @@ namespace FileScannerTest
         public void UpdateStatsSetsModifyTimeUtc()
         {
             var sut = new FileDescriptor(EinsteinJpegPath);
-            new SignatureGenerator().UpdateStats(sut);
+            CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.ModifyTime, Is.EqualTo(EinsteinJpegModifyTime));
         }
@@ -53,7 +57,7 @@ namespace FileScannerTest
         public void IsFolderIsFalseForFile()
         {
             var sut = new FileDescriptor(EinsteinJpegPath);
-            new SignatureGenerator().UpdateStats(sut);
+            CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.IsFolder, Is.False);
         }
@@ -62,7 +66,7 @@ namespace FileScannerTest
         public void IsFolderIsTrueForFolder()
         {
             var sut = new FileDescriptor(ResourcesPath);
-            new SignatureGenerator().UpdateStats(sut);
+            CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.IsFolder, Is.True);
         }
@@ -71,7 +75,7 @@ namespace FileScannerTest
         public void FolderSizeIsSumOfSizeOfChildren()
         {
             var sut = new FileDescriptor(ResourcesPath);
-            new SignatureGenerator().UpdateStats(sut);
+            CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.Size, Is.EqualTo(52439 + 12));
         }
@@ -80,7 +84,7 @@ namespace FileScannerTest
         public void UpdateContentHashSetsSHA1ContentHashInBase64()
         {
             var sut = new FileDescriptor(EinsteinJpegPath);
-            new SignatureGenerator().UpdateContentHash(sut);
+            CreateSignatureGenerator().UpdateContentHash(sut);
 
             Assert.That(sut.ContentHash, Is.EqualTo("2jKPfcACkyF04UTJEeYakT5O3+k="));
         }

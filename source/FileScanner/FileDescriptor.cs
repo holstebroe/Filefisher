@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,8 +24,12 @@ namespace FileScanner
 
         public DateTime ModifyTime { get; set; }
 
+        public byte[] StatHash { get; set; }
+
         public string ContentHash { get; set; }
 
         public bool IsFolder { get; set; }
+
+        public IEnumerable<FileDescriptor> Children { get; set; }
     }
 }

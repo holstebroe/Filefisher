@@ -12,6 +12,13 @@ namespace FileScanner
     /// </summary>
     public class SignatureGenerator
     {
+        private readonly StatSignatureGenerator statSignatureGenerator;
+
+        public SignatureGenerator(IHashGenerator hashGenerator)
+        {
+            statSignatureGenerator = new StatSignatureGenerator(hashGenerator);
+        }
+
         /// <summary>
         /// Updates file system properties for a file descriptor.
         /// If the file descriptor is a folder, some properties will be based on sub-folders and files.
@@ -40,6 +47,8 @@ namespace FileScanner
             }
             descriptor.CreateTime = fileSystemInfo.CreationTimeUtc;
             descriptor.ModifyTime = fileSystemInfo.LastWriteTimeUtc;
+
+            statSignatureGenerator.Generate(descriptor);
         }
 
         private IEnumerable<FileDescriptor> GetChildDescriptors(FileDescriptor descriptor)
