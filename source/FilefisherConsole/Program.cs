@@ -26,6 +26,25 @@ namespace FilefisherConsole
             var crawler = new FileCrawler(database, signatureGenerator);
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
             PrintDescriptorTree(rootDescriptor);
+            PrintDuplicates(database);
+        }
+
+        private static void PrintDuplicates(MemoryFileDatabase database)
+        {
+            var duplicatesByStat = database.GetAllDescriptors().GroupBy(x => Convert.ToBase64String(x.StatHash)).Where(x => x.Count() > 1);
+            Console.WriteLine("DUPLICATES");
+            Console.WriteLine("----------");
+            foreach (var duplicateGroup in duplicatesByStat)
+            {
+                Console.WriteLine("Duplicated stat signature {0}", Convert.ToBase64String(duplicateGroup.First().StatHash));
+                int duplicateIndex = 1;
+                foreach (var fileDescriptor in duplicateGroup)
+                {
+                    Console.WriteLine("[{0}] {1}", duplicateIndex, fileDescriptor.Path);
+                    duplicateIndex++;
+                }
+
+            }
         }
 
         private static void PrintDescriptorTree(FileDescriptor rootDescriptor, string indent = "")
