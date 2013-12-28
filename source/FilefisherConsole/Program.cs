@@ -39,15 +39,15 @@ namespace FilefisherConsole
         private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
         {
             var contentCrawler = new FileCrawler(new NullFileDatabase(), new RevisitDescriptorProvider(),
-                                                 new ContentSignatureGenerator(new SHA1HashGenerator()));
+                                                 new SampleSignatureGenerator(new SHA1HashGenerator()));
             var contentTimer = Stopwatch.StartNew();
             contentCrawler.ScanDirectory(rootDescriptor);
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
-            Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second", descriptorCount,
-                              contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
             PrintDuplicates(database, descriptor => descriptor.ContentHash);
+            Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second", descriptorCount,
+                              contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
         }
 
         private static void PrintDuplicates(MemoryFileDatabase database, Func<FileDescriptor, byte[]> signatureFunc)
@@ -60,7 +60,7 @@ namespace FilefisherConsole
             Console.WriteLine("----------");
             foreach (var duplicateGroup in duplicatesByStat)
             {
-                Console.WriteLine("Duplicated stat signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
+                Console.WriteLine("Duplicated signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
                 int duplicateIndex = 1;
                 foreach (var fileDescriptor in duplicateGroup)
                 {
