@@ -23,7 +23,7 @@ namespace FilefisherConsole
                 ShowUsage();                
             }
             var database = new MemoryFileDatabase();
-            var signatureGenerator = new SignatureGenerator(new SHA1HashGenerator());
+            var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
             var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator);
             var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);

@@ -12,9 +12,9 @@ namespace FileScanner
     {
         private readonly IFileDatabase fileDatabase;
         private readonly IFileDescriptorProvider descriptorProvider;
-        private readonly SignatureGenerator signatureGenerator;
+        private readonly ISignatureGenerator signatureGenerator;
 
-        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider, SignatureGenerator signatureGenerator)
+        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider, ISignatureGenerator signatureGenerator)
         {
             this.fileDatabase = fileDatabase;
             this.descriptorProvider = descriptorProvider;
@@ -40,7 +40,7 @@ namespace FileScanner
                     subDescriptors.Add(subDirectory);
                 }
                 directoryDescriptor.Children = subDescriptors;
-                signatureGenerator.UpdateStats(directoryDescriptor);
+                signatureGenerator.UpdateFolderSignature(directoryDescriptor);
                 fileDatabase.UpdateDescriptor(directoryDescriptor);
             }
             catch (UnauthorizedAccessException)
@@ -60,7 +60,7 @@ namespace FileScanner
                     Console.WriteLine("Could not open {0}", descriptor.FullPath);
                     continue;
                 }
-                signatureGenerator.UpdateStats(descriptor);
+                signatureGenerator.UpdateFileSignature(descriptor);
                 fileDatabase.UpdateDescriptor(descriptor);
             }
             return descriptors;

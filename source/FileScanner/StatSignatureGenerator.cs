@@ -8,21 +8,13 @@ namespace FileScanner
     /// <summary>
     /// Signature generator that generates a signature based on file stats: File name, modify time and size
     /// </summary>
-    public class StatSignatureGenerator
+    public class StatSignatureGenerator : ISignatureGenerator
     {
         private readonly IHashGenerator hashGenerator;
 
         public StatSignatureGenerator(IHashGenerator hashGenerator)
         {
             this.hashGenerator = hashGenerator;
-        }
-
-        public void Generate(FileDescriptor fileDescriptor)
-        {
-            fileDescriptor.StatHash =
-                fileDescriptor.IsFolder 
-                    ? GenerateFolderSignature(fileDescriptor) 
-                    : GenerateFileSignature(fileDescriptor);
         }
 
         /// <summary>
@@ -61,6 +53,16 @@ namespace FileScanner
             var sizeBytes = BitConverter.GetBytes(fileDescriptor.Size);
             var allBytes = nameBytes.Concat(modifyBytes).Concat(sizeBytes).ToArray();
             return hashGenerator.Generate(allBytes);
+        }
+
+        public void UpdateFileSignature(FileDescriptor descriptor)
+        {
+            descriptor.StatHash = GenerateFileSignature(descriptor);
+        }
+
+        public void UpdateFolderSignature(FileDescriptor descriptor)
+        {
+            descriptor.StatHash = GenerateFolderSignature(descriptor);
         }
     }
 }

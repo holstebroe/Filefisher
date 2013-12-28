@@ -36,7 +36,7 @@ namespace FileScanner
 
         public byte[] StatHash { get; set; }
 
-        public string ContentHash { get; set; }
+        public byte[] ContentHash { get; set; }
 
         public bool IsFolder { get; set; }
 

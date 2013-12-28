@@ -11,7 +11,7 @@ namespace FileScannerTest
         public void ScanDirectoryReturnsRootFileDescriptor()
         {
             var database = new MemoryFileDatabase();
-            var sut = new FileCrawler(database, new SystemFileDescriptorProvider(), new SignatureGenerator(new SHA1HashGenerator()));
+            var sut = new FileCrawler(database, new SystemFileDescriptorProvider(), new StatSignatureGenerator(new SHA1HashGenerator()));
             var rootDescriptor = sut.ScanDirectory(TestResources.ResourcesPath);
 
             Assert.That(rootDescriptor.Name, Is.EqualTo(TestResources.ResourcesPath));
@@ -23,7 +23,7 @@ namespace FileScannerTest
         public void ScanDirectoryAddsAllFilesAndFoldersToDatabase()
         {
             var database = new MemoryFileDatabase();
-            var sut = new FileCrawler(database, new SystemFileDescriptorProvider(), new SignatureGenerator(new SHA1HashGenerator()));
+            var sut = new FileCrawler(database, new SystemFileDescriptorProvider(), new StatSignatureGenerator(new SHA1HashGenerator()));
             sut.ScanDirectory(TestResources.ResourcesPath);
             var expected = TestResources.AllPaths;
             var actual = database.GetAllDescriptors().Select(x => x.Path);
@@ -33,7 +33,7 @@ namespace FileScannerTest
         [Test]
         public void FolderSizeIsZero()
         {
-            var sut = new FileCrawler(new MemoryFileDatabase(), new SystemFileDescriptorProvider(), new SignatureGenerator(new SHA1HashGenerator()));
+            var sut = new FileCrawler(new MemoryFileDatabase(), new SystemFileDescriptorProvider(), new StatSignatureGenerator(new SHA1HashGenerator()));
             var rootDescriptor = sut.ScanDirectory(TestResources.ResourcesPath);
 
             Assert.That(rootDescriptor.Size, Is.EqualTo(0));

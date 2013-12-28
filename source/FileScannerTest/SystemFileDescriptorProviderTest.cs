@@ -22,6 +22,7 @@ namespace FileScannerTest
         [Test]
         public void FileDescriptorsHaveCorrectStats()
         {
+            TestResources.Initialize();
             var sut = new SystemFileDescriptorProvider();
             var descriptor = new FileDescriptor(TestResources.ResourcesPath);
             var file = sut.GetFiles(descriptor).First(x => x.Path == TestResources.EinsteinJpegPath );
