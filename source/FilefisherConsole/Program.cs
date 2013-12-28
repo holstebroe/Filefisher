@@ -24,7 +24,7 @@ namespace FilefisherConsole
             }
             var database = new MemoryFileDatabase();
             var signatureGenerator = new SignatureGenerator(new SHA1HashGenerator());
-            var crawler = new FileCrawler(database, signatureGenerator);
+            var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator);
             var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
             scanTimer.Stop();

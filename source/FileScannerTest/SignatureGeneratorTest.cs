@@ -21,51 +21,6 @@ namespace FileScannerTest
         }
 
         [Test]
-        public void UpdateStatsSetsFileSize()
-        {
-            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
-            CreateSignatureGenerator().UpdateStats(sut);
-
-            Assert.That(sut.Size, Is.EqualTo(52439));
-        }
-
-        [Test]
-        public void UpdateStatsSetsCreateTimeUtc()
-        {
-            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
-            CreateSignatureGenerator().UpdateStats(sut);
-
-            Assert.That(sut.CreateTime, Is.EqualTo(TestResources.EinsteinJpegCreateTime));
-        }
-
-        [Test]
-        public void UpdateStatsSetsModifyTimeUtc()
-        {
-            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
-            CreateSignatureGenerator().UpdateStats(sut);
-
-            Assert.That(sut.ModifyTime, Is.EqualTo(TestResources.EinsteinJpegModifyTime));
-        }
-
-        [Test]
-        public void IsFolderIsFalseForFile()
-        {
-            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
-            CreateSignatureGenerator().UpdateStats(sut);
-
-            Assert.That(sut.IsFolder, Is.False);
-        }
-
-        [Test]
-        public void IsFolderIsTrueForFolder()
-        {
-            var sut = new FileDescriptor(TestResources.ResourcesPath);
-            CreateSignatureGenerator().UpdateStats(sut);
-
-            Assert.That(sut.IsFolder, Is.True);
-        }
-
-        [Test]
         public void UpdateContentHashSetsSHA1ContentHashInBase64()
         {
             var sut = new FileDescriptor(TestResources.EinsteinJpegPath);

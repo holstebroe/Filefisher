@@ -37,8 +37,15 @@ namespace FileScanner
             if (fileDescriptor.Children == null) return null;
             foreach (var descriptor in fileDescriptor.Children)
             {
-                allChildBytes.AddRange(descriptor.StatHash);
+                // TODO: Log warning if StatHash is null. The hash may be null if access to the folder was denied.
+                if (descriptor.StatHash != null)
+                {
+                    allChildBytes.AddRange(descriptor.StatHash);
+                }
             }
+            // Include folder name in signature
+            var nameBytes = Encoding.UTF8.GetBytes(fileDescriptor.Name);
+            allChildBytes.AddRange(nameBytes);
             return hashGenerator.Generate(allChildBytes.ToArray());
         }
 

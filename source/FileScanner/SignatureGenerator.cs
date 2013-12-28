@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace FileScanner
 {
@@ -25,26 +22,6 @@ namespace FileScanner
         /// </summary>
         public void UpdateStats(FileDescriptor descriptor)
         {
-            var attributes = File.GetAttributes(descriptor.FullPath);
-            descriptor.IsFolder = attributes.HasFlag(FileAttributes.Directory);
-            FileSystemInfo fileSystemInfo;
-            if (descriptor.IsFolder)
-            {
-                fileSystemInfo = new DirectoryInfo(descriptor.FullPath);
-
-                if (descriptor.Children != null)
-                    descriptor.Size = descriptor.Children.Sum(x => x.Size);
-            }
-            else
-            {
-                var fileInfo = new FileInfo(descriptor.FullPath);
-                fileSystemInfo = fileInfo;
-                descriptor.Size = fileInfo.Length;
-
-            }
-            descriptor.CreateTime = fileSystemInfo.CreationTimeUtc;
-            descriptor.ModifyTime = fileSystemInfo.LastWriteTimeUtc;
-
             statSignatureGenerator.Generate(descriptor);
         }
 

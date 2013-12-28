@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace FileScanner
 {
@@ -16,14 +14,47 @@ namespace FileScanner
         {
             var directoryInfo = new DirectoryInfo(descriptor.FullPath);
             var subDirectories = directoryInfo.EnumerateDirectories("*.*", SearchOption.TopDirectoryOnly);
-            return subDirectories.Select(x => new FileDescriptor(descriptor.GetBasePath(), x.FullName));
+            var basePath = descriptor.GetBasePath();
+            return subDirectories.Select(x => CreateFolderDescriptor(basePath, x));
         }
 
         public IEnumerable<FileDescriptor> GetFiles(FileDescriptor descriptor)
         {
             var directoryInfo = new DirectoryInfo(descriptor.FullPath);
             var subDirectories = directoryInfo.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly);
-            return subDirectories.Select(x => new FileDescriptor(descriptor.GetBasePath(), x.FullName));
+            var basePath = descriptor.GetBasePath();
+            return subDirectories.Select(x => CreateFileDescriptor(basePath, x));
         }
+
+        /// <summary>
+        /// Creates file descriptor with file system properties.
+        /// </summary>
+        private FileDescriptor CreateFileDescriptor(string basePath, FileInfo fileInfo)
+        {
+            var descriptor = new FileDescriptor(basePath, fileInfo.FullName)
+                {
+                    IsFolder = false,
+                    CreateTime = fileInfo.CreationTimeUtc,
+                    ModifyTime = fileInfo.LastWriteTimeUtc,
+                    Size = fileInfo.Length
+                };
+            return descriptor;
+        }
+
+        /// <summary>
+        /// Updates file system properties for a file descriptor.
+        /// If the file descriptor is a folder, some properties will be based on sub-folders and files.
+        /// </summary>
+        private FileDescriptor CreateFolderDescriptor(string basePath, FileSystemInfo fileInfo)
+        {
+            var descriptor = new FileDescriptor(basePath, fileInfo.FullName)
+            {
+                IsFolder = true,
+                CreateTime = fileInfo.CreationTimeUtc,
+                ModifyTime = fileInfo.LastWriteTimeUtc,
+            };
+            return descriptor;
+        }
+        
     }
 }

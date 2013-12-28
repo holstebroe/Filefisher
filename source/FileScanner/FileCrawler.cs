@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace FileScanner
 {
@@ -10,53 +11,50 @@ namespace FileScanner
     public class FileCrawler
     {
         private readonly IFileDatabase fileDatabase;
+        private readonly IFileDescriptorProvider descriptorProvider;
         private readonly SignatureGenerator signatureGenerator;
 
-        public FileCrawler(IFileDatabase fileDatabase, SignatureGenerator signatureGenerator)
+        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider, SignatureGenerator signatureGenerator)
         {
             this.fileDatabase = fileDatabase;
+            this.descriptorProvider = descriptorProvider;
             this.signatureGenerator = signatureGenerator;
         }
 
         public FileDescriptor ScanDirectory(string baseDirectory)
         {
-            var baseDirectoryInfo = new DirectoryInfo(baseDirectory);
-            var basePath = baseDirectoryInfo.Parent.FullName;
-            if (basePath != Path.GetPathRoot(baseDirectory))
-                basePath += Path.DirectorySeparatorChar;
-            return ScanDirectory(basePath, baseDirectoryInfo);
+            var baseDescriptor = new FileDescriptor(baseDirectory);
+            ScanDirectory(baseDescriptor);
+            return baseDescriptor;
         }
 
-        private FileDescriptor ScanDirectory(string basePath, DirectoryInfo directoryInfo)
+        private void ScanDirectory(FileDescriptor directoryDescriptor)
         {
-            var directoryDescriptor = new FileDescriptor(basePath, directoryInfo.FullName);
-            var descriptors = ScanFiles(basePath, directoryInfo);
-            var subDirectories = directoryInfo.EnumerateDirectories("*.*", SearchOption.TopDirectoryOnly);
-            foreach (var subDirectoryInfo in subDirectories)
+            try
             {
-                try
+                var subDescriptors = ScanFiles(directoryDescriptor);
+                var subDirectories = descriptorProvider.GetDirectories(directoryDescriptor);
+                foreach (var subDirectory in subDirectories)
                 {
-                    var subDirectoryDescriptor = ScanDirectory(basePath, subDirectoryInfo);
-                    descriptors.Add(subDirectoryDescriptor);
+                    ScanDirectory(subDirectory);
+                    subDescriptors.Add(subDirectory);
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    // TODO: Log warning
-                }
+                directoryDescriptor.Children = subDescriptors;
+                signatureGenerator.UpdateStats(directoryDescriptor);
+                fileDatabase.UpdateDescriptor(directoryDescriptor);
             }
-            directoryDescriptor.Children = descriptors;
-            signatureGenerator.UpdateStats(directoryDescriptor);
-            fileDatabase.UpdateDescriptor(directoryDescriptor);
-            return directoryDescriptor;
+            catch (UnauthorizedAccessException)
+            {
+                // TODO log that we were not allowed to scan the directory
+            }
         }
 
-        private List<FileDescriptor> ScanFiles(string basePath, DirectoryInfo directoryInfo)
+        private List<FileDescriptor> ScanFiles(FileDescriptor directoryDescriptor)
         {
-            var descriptors = new List<FileDescriptor>();
-            var files = directoryInfo.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly);
-            foreach (var fileInfo in files)
+            var descriptors = descriptorProvider.GetFiles(directoryDescriptor).ToList();
+
+            foreach (var descriptor in descriptors)
             {
-                var descriptor = new FileDescriptor(basePath, fileInfo.FullName);
                 if (!File.Exists(descriptor.FullPath))
                 {
                     Console.WriteLine("Could not open {0}", descriptor.FullPath);
@@ -64,7 +62,6 @@ namespace FileScanner
                 }
                 signatureGenerator.UpdateStats(descriptor);
                 fileDatabase.UpdateDescriptor(descriptor);
-                descriptors.Add(descriptor);
             }
             return descriptors;
         }

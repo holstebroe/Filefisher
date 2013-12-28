@@ -5,7 +5,7 @@ namespace FileScanner
     /// <summary>
     /// Interface for providers of file descriptors, which could be the underlying file system itself.
     /// </summary>
-    interface IFileDescriptorProvider
+    public interface IFileDescriptorProvider
     {
         /// <summary>
         /// Returns all directories directly under the directory represented by the file descriptor.
