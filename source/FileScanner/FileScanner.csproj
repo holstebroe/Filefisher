@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IFileDescriptorProvider.cs" />
     <Compile Include="JetbrainsAnnotations.cs" />
     <Compile Include="FileDescriptor.cs" />
     <Compile Include="FileCrawler.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="SHA1HashGenerator.cs" />
     <Compile Include="SignatureGenerator.cs" />
     <Compile Include="StatSignatureGenerator.cs" />
+    <Compile Include="SystemFileDescriptorProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

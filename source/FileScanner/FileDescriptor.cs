@@ -41,5 +41,10 @@ namespace FileScanner
         public bool IsFolder { get; set; }
 
         public IEnumerable<FileDescriptor> Children { get; set; }
+
+        public string GetBasePath()
+        {
+            return FullPath.Substring(0, FullPath.Length - Path.Length);
+        }
     }
 }

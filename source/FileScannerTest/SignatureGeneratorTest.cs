@@ -8,17 +8,11 @@ namespace FileScannerTest
     [TestFixture]
     public class SignatureGeneratorTest
     {
-        private const string ResourcesPath = "Resources";
-        private const string EinsteinJpegPath = ResourcesPath + @"\albert-einstein.jpg";
-
-        private static readonly DateTime EinsteinJpegCreateTime = new DateTime(2013, 12, 24, 12, 34, 56, 123, DateTimeKind.Utc);
-        private static readonly DateTime EinsteinJpegModifyTime = new DateTime(2013, 12, 25, 21, 28, 48, 222, DateTimeKind.Utc);
-
         [TestFixtureSetUp]
         public void CreateTimeSetup()
         {
-            File.SetCreationTimeUtc(EinsteinJpegPath, EinsteinJpegCreateTime);
-            File.SetLastWriteTimeUtc(EinsteinJpegPath, EinsteinJpegModifyTime);
+            File.SetCreationTimeUtc(TestResources.EinsteinJpegPath, TestResources.EinsteinJpegCreateTime);
+            File.SetLastWriteTimeUtc(TestResources.EinsteinJpegPath, TestResources.EinsteinJpegModifyTime);
         }
 
         private SignatureGenerator CreateSignatureGenerator()
@@ -29,7 +23,7 @@ namespace FileScannerTest
         [Test]
         public void UpdateStatsSetsFileSize()
         {
-            var sut = new FileDescriptor(EinsteinJpegPath);
+            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
             CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.Size, Is.EqualTo(52439));
@@ -38,25 +32,25 @@ namespace FileScannerTest
         [Test]
         public void UpdateStatsSetsCreateTimeUtc()
         {
-            var sut = new FileDescriptor(EinsteinJpegPath);
+            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
             CreateSignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.CreateTime, Is.EqualTo(EinsteinJpegCreateTime));
+            Assert.That(sut.CreateTime, Is.EqualTo(TestResources.EinsteinJpegCreateTime));
         }
 
         [Test]
         public void UpdateStatsSetsModifyTimeUtc()
         {
-            var sut = new FileDescriptor(EinsteinJpegPath);
+            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
             CreateSignatureGenerator().UpdateStats(sut);
 
-            Assert.That(sut.ModifyTime, Is.EqualTo(EinsteinJpegModifyTime));
+            Assert.That(sut.ModifyTime, Is.EqualTo(TestResources.EinsteinJpegModifyTime));
         }
 
         [Test]
         public void IsFolderIsFalseForFile()
         {
-            var sut = new FileDescriptor(EinsteinJpegPath);
+            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
             CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.IsFolder, Is.False);
@@ -65,7 +59,7 @@ namespace FileScannerTest
         [Test]
         public void IsFolderIsTrueForFolder()
         {
-            var sut = new FileDescriptor(ResourcesPath);
+            var sut = new FileDescriptor(TestResources.ResourcesPath);
             CreateSignatureGenerator().UpdateStats(sut);
 
             Assert.That(sut.IsFolder, Is.True);
@@ -74,7 +68,7 @@ namespace FileScannerTest
         [Test]
         public void UpdateContentHashSetsSHA1ContentHashInBase64()
         {
-            var sut = new FileDescriptor(EinsteinJpegPath);
+            var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
             CreateSignatureGenerator().UpdateContentHash(sut);
 
             Assert.That(sut.ContentHash, Is.EqualTo("2jKPfcACkyF04UTJEeYakT5O3+k="));
