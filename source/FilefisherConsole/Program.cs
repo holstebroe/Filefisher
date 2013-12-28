@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,9 +25,13 @@ namespace FilefisherConsole
             var database = new MemoryFileDatabase();
             var signatureGenerator = new SignatureGenerator(new SHA1HashGenerator());
             var crawler = new FileCrawler(database, signatureGenerator);
+            var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
+            scanTimer.Stop();
             PrintDescriptorTree(rootDescriptor);
             PrintDuplicates(database);
+            var descriptorCount = database.GetAllDescriptors().Count();
+            Console.WriteLine("Scanned {0} entries in {1}. {2} stat scans per second", descriptorCount, scanTimer.Elapsed, 1000*descriptorCount / scanTimer.ElapsedMilliseconds);
         }
 
         private static void PrintDuplicates(MemoryFileDatabase database)
