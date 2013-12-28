@@ -49,7 +49,9 @@
     <Compile Include="IFileDatabase.cs" />
     <Compile Include="IHashGenerator.cs" />
     <Compile Include="MemoryFileDatabase.cs" />
+    <Compile Include="NullFileDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RevisitDescriptorProvider.cs" />
     <Compile Include="SHA1HashGenerator.cs" />
     <Compile Include="StatSignatureGenerator.cs" />
     <Compile Include="SystemFileDescriptorProvider.cs" />

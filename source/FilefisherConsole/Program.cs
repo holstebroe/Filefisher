@@ -32,6 +32,20 @@ namespace FilefisherConsole
             PrintDuplicates(database);
             var descriptorCount = database.GetAllDescriptors().Count();
             Console.WriteLine("Scanned {0} entries in {1}. {2} stat scans per second", descriptorCount, scanTimer.Elapsed, 1000*descriptorCount / scanTimer.ElapsedMilliseconds);
+
+            UpdateContentSignatures(database, rootDescriptor);
+        }
+
+        private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
+        {
+            var contentCrawler = new FileCrawler(new NullFileDatabase(), new RevisitDescriptorProvider(),
+                                                 new ContentSignatureGenerator(new SHA1HashGenerator()));
+            var contentTimer = Stopwatch.StartNew();
+            contentCrawler.ScanDirectory(rootDescriptor);
+            contentTimer.Stop();
+            var descriptorCount = database.GetAllDescriptors().Count();
+            Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second", descriptorCount,
+                              contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
         }
 
         private static void PrintDuplicates(MemoryFileDatabase database)

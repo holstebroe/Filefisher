@@ -28,7 +28,7 @@ namespace FileScanner
             return baseDescriptor;
         }
 
-        private void ScanDirectory(FileDescriptor directoryDescriptor)
+        public void ScanDirectory(FileDescriptor directoryDescriptor)
         {
             try
             {
