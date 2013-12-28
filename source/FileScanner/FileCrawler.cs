@@ -24,19 +24,25 @@ namespace FileScanner
             var basePath = baseDirectoryInfo.Parent.FullName;
             if (basePath != Path.GetPathRoot(baseDirectory))
                 basePath += Path.DirectorySeparatorChar;
-            return ScanDirectory(basePath, baseDirectoryInfo);            
+            return ScanDirectory(basePath, baseDirectoryInfo);
         }
 
         private FileDescriptor ScanDirectory(string basePath, DirectoryInfo directoryInfo)
         {
             var directoryDescriptor = new FileDescriptor(basePath, directoryInfo.FullName);
-
             var descriptors = ScanFiles(basePath, directoryInfo);
             var subDirectories = directoryInfo.EnumerateDirectories("*.*", SearchOption.TopDirectoryOnly);
             foreach (var subDirectoryInfo in subDirectories)
             {
-                var subDirectoryDescriptor = ScanDirectory(basePath, subDirectoryInfo);
-                descriptors.Add(subDirectoryDescriptor);
+                try
+                {
+                    var subDirectoryDescriptor = ScanDirectory(basePath, subDirectoryInfo);
+                    descriptors.Add(subDirectoryDescriptor);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // TODO: Log warning
+                }
             }
             directoryDescriptor.Children = descriptors;
             signatureGenerator.UpdateStats(directoryDescriptor);
