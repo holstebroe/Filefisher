@@ -6,6 +6,7 @@ using System.Text;
 
 namespace FileScanner
 {
+    [Serializable]
     public class FileDescriptor
     {
         public FileDescriptor(string relativeFilePath)

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using FileScanner;
 
@@ -20,7 +22,7 @@ namespace FilefisherConsole
             if (!Directory.Exists(baseFolder))
             {
                 Console.WriteLine("No such directory: {0}", baseFolder);
-                ShowUsage();                
+                ShowUsage();
             }
             var database = new MemoryFileDatabase();
             var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
@@ -28,12 +30,31 @@ namespace FilefisherConsole
             var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
             scanTimer.Stop();
+            SaveDescriptorTree(rootDescriptor);
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.StatHash);
             PrintDuplicates(database, descriptor => descriptor.StatHash);
             var descriptorCount = database.GetAllDescriptors().Count();
-            Console.WriteLine("Scanned {0} entries in {1}. {2} stat scans per second", descriptorCount, scanTimer.Elapsed, 1000*descriptorCount / scanTimer.ElapsedMilliseconds);
+            Console.WriteLine("Scanned {0} entries in {1}. {2} stat scans per second", descriptorCount, scanTimer.Elapsed, 1000 * descriptorCount / scanTimer.ElapsedMilliseconds);
 
             UpdateContentSignatures(database, rootDescriptor);
+        }
+
+        private static void SaveDescriptorTree(FileDescriptor rootDescriptor)
+        {
+            var applicationDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            var programDataFolder = Path.Combine(applicationDataFolder, "Filefisher");
+            if (!Directory.Exists(programDataFolder))
+                Directory.CreateDirectory(programDataFolder);
+            var databaseFileName = rootDescriptor.Name + ".fdb";
+            var databasePath = Path.Combine(programDataFolder, databaseFileName);
+            using (var stream = new FileStream(databasePath, FileMode.Create))
+            {
+                using (var zipSteam = new GZipStream(stream, CompressionMode.Compress))
+                {
+                    var formatter = new BinaryFormatter();
+                    formatter.Serialize(zipSteam, rootDescriptor);
+                }                            
+            }
         }
 
         private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
@@ -42,6 +63,7 @@ namespace FilefisherConsole
                                                  new SampleSignatureGenerator(new SHA1HashGenerator()));
             var contentTimer = Stopwatch.StartNew();
             contentCrawler.ScanDirectory(rootDescriptor);
+            SaveDescriptorTree(rootDescriptor);
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
