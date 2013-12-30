@@ -6,3 +6,8 @@ source/packages
 **/obj/Debug/*
 *.user
 **/obj/*
+source/FilefisherLib/bin/Debug/
+source/FileScanner/bin/Debug/
+source/FileScanner/obj/Debug/
+source/FileScannerTest/bin/Debug/
+source/FileScannerTest/obj/Debug/
