@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using FileScanner;
@@ -31,6 +32,65 @@ namespace FileScannerTest
                 sut.UpdateDescriptor(descriptor);               
             }
             Assert.That(sut.GetAllDescriptors(), Is.EquivalentTo(descriptors));
+        }
+
+        [Test]
+        public void RootDescriptorIsDescriptorWithIsRootTrue()
+        {
+            var sut = new MemoryFileDatabase();
+            var fda = new FileDescriptor("a");
+            var fdb = new FileDescriptor("b") { IsRoot = true};
+            var fdc = new FileDescriptor("c");
+            sut.UpdateDescriptor(fda);
+            sut.UpdateDescriptor(fdb);
+            sut.UpdateDescriptor(fdc);
+            
+            Assert.That(sut.RootDescriptor, Is.EqualTo(fdb));
+        }
+
+        [Test]
+        public void UpdateDescriptorThrowsExceptionIfNewRootIsAssigned()
+        {
+            var sut = new MemoryFileDatabase();
+            var fda = new FileDescriptor("a") { IsRoot = true };
+            var fdb = new FileDescriptor("b") { IsRoot = true};
+            sut.UpdateDescriptor(fda);
+            Assert.Throws<InvalidOperationException>(() => sut.UpdateDescriptor(fdb));
+        }
+
+        [Test]
+        public void UpdateDescriptorDoesNotThrowExceptionIfSameRootIsAssigned()
+        {
+            var sut = new MemoryFileDatabase();
+            var fda = new FileDescriptor("a") { IsRoot = true };
+            sut.UpdateDescriptor(fda);
+            sut.UpdateDescriptor(fda);
+        }
+
+        [Test]
+        public void SaveLoadRoundtripRestoresAllFileDescriptors()
+        {
+            var database = new MemoryFileDatabase();
+            var fda = new FileDescriptor("a");
+            var fdb = new FileDescriptor("b") { IsRoot = true };
+            var fdc = new FileDescriptor("c");
+            database.UpdateDescriptor(fda);
+            database.UpdateDescriptor(fdb);
+            database.UpdateDescriptor(fdc);
+            Assume.That(database.GetAllDescriptors().Count(), Is.EqualTo(3));
+            var fileName = Path.GetTempFileName();
+            try
+            {
+                database.Save(fileName);
+
+                var sut = MemoryFileDatabase.Load(fileName);
+                Assert.That(sut.GetAllDescriptors().Select(x => x.Path), Is.EquivalentTo(database.GetAllDescriptors().Select(x => x.Path)));
+                Assert.That(sut.RootDescriptor.Path, Is.EquivalentTo(database.RootDescriptor.Path));
+            }
+            finally
+            {
+                File.Delete(fileName);
+            }
         }
     }
 }

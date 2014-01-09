@@ -23,7 +23,7 @@ namespace FileScanner
 
         public FileDescriptor ScanDirectory(string baseDirectory)
         {
-            var baseDescriptor = new FileDescriptor(baseDirectory);
+            var baseDescriptor = new FileDescriptor(baseDirectory) { IsRoot = true};
             ScanDirectory(baseDescriptor);
             return baseDescriptor;
         }

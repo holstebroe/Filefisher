@@ -30,7 +30,7 @@ namespace FilefisherConsole
             var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
             scanTimer.Stop();
-            SaveDescriptorTree(rootDescriptor);
+            SaveDatabase(database);
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.StatHash);
             PrintDuplicates(database, descriptor => descriptor.StatHash);
             var descriptorCount = database.GetAllDescriptors().Count();
@@ -39,22 +39,16 @@ namespace FilefisherConsole
             UpdateContentSignatures(database, rootDescriptor);
         }
 
-        private static void SaveDescriptorTree(FileDescriptor rootDescriptor)
+        private static void SaveDatabase(MemoryFileDatabase database)
         {
             var applicationDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
             var programDataFolder = Path.Combine(applicationDataFolder, "Filefisher");
             if (!Directory.Exists(programDataFolder))
                 Directory.CreateDirectory(programDataFolder);
+            var rootDescriptor = database.RootDescriptor;
             var databaseFileName = rootDescriptor.Name + ".fdb";
             var databasePath = Path.Combine(programDataFolder, databaseFileName);
-            using (var stream = new FileStream(databasePath, FileMode.Create))
-            {
-                using (var zipSteam = new GZipStream(stream, CompressionMode.Compress))
-                {
-                    var formatter = new BinaryFormatter();
-                    formatter.Serialize(zipSteam, rootDescriptor);
-                }                            
-            }
+            database.Save(databasePath);
         }
 
         private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
@@ -63,7 +57,7 @@ namespace FilefisherConsole
                                                  new SampleSignatureGenerator(new SHA1HashGenerator()));
             var contentTimer = Stopwatch.StartNew();
             contentCrawler.ScanDirectory(rootDescriptor);
-            SaveDescriptorTree(rootDescriptor);
+            SaveDatabase(database);
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
