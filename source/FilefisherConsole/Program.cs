@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using FileScanner;
 
 namespace FilefisherConsole
@@ -30,7 +26,7 @@ namespace FilefisherConsole
             var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
             scanTimer.Stop();
-            SaveDatabase(database);
+            database.SaveDefault();
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.StatHash);
             PrintDuplicates(database, descriptor => descriptor.StatHash);
             var descriptorCount = database.GetAllDescriptors().Count();
@@ -39,25 +35,13 @@ namespace FilefisherConsole
             UpdateContentSignatures(database, rootDescriptor);
         }
 
-        private static void SaveDatabase(MemoryFileDatabase database)
-        {
-            var applicationDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            var programDataFolder = Path.Combine(applicationDataFolder, "Filefisher");
-            if (!Directory.Exists(programDataFolder))
-                Directory.CreateDirectory(programDataFolder);
-            var rootDescriptor = database.RootDescriptor;
-            var databaseFileName = rootDescriptor.Name + ".fdb";
-            var databasePath = Path.Combine(programDataFolder, databaseFileName);
-            database.Save(databasePath);
-        }
-
         private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
         {
             var contentCrawler = new FileCrawler(new NullFileDatabase(), new RevisitDescriptorProvider(),
                                                  new SampleSignatureGenerator(new SHA1HashGenerator()));
             var contentTimer = Stopwatch.StartNew();
             contentCrawler.ScanDirectory(rootDescriptor);
-            SaveDatabase(database);
+            database.SaveDefault();
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);

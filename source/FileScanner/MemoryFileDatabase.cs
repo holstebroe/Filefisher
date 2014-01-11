@@ -14,6 +14,8 @@ namespace FileScanner
     [Serializable]
     public class MemoryFileDatabase : IFileDatabase
     {
+        private const string DefaultFileExtension = ".fdb";
+        private const string ApplicationDataFolderName = "Filefisher";
         private readonly Dictionary<string, FileDescriptor> descriptorMap = new Dictionary<string, FileDescriptor>();
 
         public FileDescriptor RootDescriptor { get; private set; }
@@ -37,6 +39,28 @@ namespace FileScanner
             return descriptorMap.Values;
         }
 
+        /// <summary>
+        /// Returns default path name of this database based on the root descriptor.
+        /// </summary>
+        public string GetDefaultDatabasePath()
+        {
+            var rootDescriptor = RootDescriptor;
+            var applicationDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            var programDataFolder = Path.Combine(applicationDataFolder, ApplicationDataFolderName);
+            if (!Directory.Exists(programDataFolder))
+                Directory.CreateDirectory(programDataFolder);
+            var databaseFileName = rootDescriptor.Name + DefaultFileExtension;
+            var databasePath = Path.Combine(programDataFolder, databaseFileName);
+            return databasePath;
+        }
+
+        /// <summary>
+        /// Saves database to default database file name. <seealso cref="GetDefaultDatabasePath"/>.
+        /// </summary>
+        public void SaveDefault()
+        {
+            Save(GetDefaultDatabasePath());
+        }
 
         /// <summary>
         /// Saves database into specified filename.
