@@ -8,16 +8,17 @@ namespace FileScannerTest
     public class ContentSignatureGeneratorTest
     {
         [Test]
-        public void GeneratesFileSignatureFromNameModifyAndSize()
+        public void GeneratesFileSignatureFromFileContent()
         {
-            var descriptor = new FileDescriptor("myfile.txt");
-            descriptor.ModifyTime = new DateTime(2013, 12, 24, 0, 0, 0, DateTimeKind.Utc);
-            descriptor.Size = 1024;
+            var descriptor = new FileDescriptor(TestResources.TextFilePath);
+            // Set modify time and size to random values to prove that these are ignored
+            descriptor.ModifyTime = DateTime.Now;
+            descriptor.Size = descriptor.ModifyTime.Millisecond;
 
             var sut = new ContentSignatureGenerator(new SHA1HashGenerator());
             sut.UpdateFileSignature(descriptor);
             var b64Signature = Convert.ToBase64String(descriptor.ContentHash);
-            Assert.That(b64Signature, Is.EqualTo("bnx6xtNphTyaIB5Cz4Yw7X6nsVk="));
+            Assert.That(b64Signature, Is.EqualTo("OkwbOzKOydWv3BCGQt/udXjMlx8="));
         }
 
         [Test]
