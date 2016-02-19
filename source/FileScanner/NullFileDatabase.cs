@@ -19,5 +19,10 @@ namespace FileScanner
         {
             return Enumerable.Empty<FileDescriptor>();
         }
+
+        public FileDescriptor GetRoot()
+        {
+            return null;
+        }
     }
 }

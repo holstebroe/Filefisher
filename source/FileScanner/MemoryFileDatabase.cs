@@ -16,6 +16,27 @@ namespace FileScanner
         private const string ApplicationDataFolderName = "Filefisher";
         private readonly Dictionary<string, FileDescriptor> descriptorMap = new Dictionary<string, FileDescriptor>();
 
+        public MemoryFileDatabase()
+        {
+            
+        }
+        public MemoryFileDatabase(FileDescriptor fileDescriptor)
+        {
+            UpdateDescriptor(fileDescriptor);
+            RootDescriptor = fileDescriptor;
+            AddChildren(fileDescriptor);
+        }
+
+        private void AddChildren(FileDescriptor descriptor)
+        {
+            foreach (var child in descriptor.Children)
+            {
+                UpdateDescriptor(child);
+                AddChildren(child);
+            }
+        }
+
+
         public FileDescriptor RootDescriptor { get; private set; }
 
         public void UpdateDescriptor(FileDescriptor fileDescriptor)
@@ -33,6 +54,11 @@ namespace FileScanner
         {
             return GetAllDescriptors();
             //return GetDeep(RootDescriptor);
+        }
+
+        public FileDescriptor GetRoot()
+        {
+            return RootDescriptor;
         }
 
         public IEnumerable<FileDescriptor> GetDeep(FileDescriptor descriptor)

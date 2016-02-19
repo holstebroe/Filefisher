@@ -10,6 +10,7 @@ namespace FileScanner
     {
         void UpdateDescriptor(FileDescriptor fileDescriptor);
         IEnumerable<FileDescriptor> GetAll();
+        FileDescriptor GetRoot();
     }
 
 }

@@ -59,6 +59,7 @@
     <Compile Include="ContentSignatureGeneratorTest.cs" />
     <Compile Include="Duplicates\FileDuplicateFinderTest.cs" />
     <Compile Include="Duplicates\StatDuplicateComparerTest.cs" />
+    <Compile Include="Duplicates\TopDescriptorDuplicateFinderTest.cs" />
     <Compile Include="FileCrawlerTest.cs" />
     <Compile Include="MemoryFileDatabaseTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
