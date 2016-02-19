@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace FileScanner
 {
@@ -12,6 +9,7 @@ namespace FileScanner
     public interface IFileDatabase
     {
         void UpdateDescriptor(FileDescriptor fileDescriptor);
+        IEnumerable<FileDescriptor> GetAll();
     }
 
 }

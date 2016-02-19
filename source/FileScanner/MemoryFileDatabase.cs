@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 
 namespace FileScanner
 {
@@ -30,6 +28,25 @@ namespace FileScanner
                 RootDescriptor = fileDescriptor;
             }
         }
+
+        public IEnumerable<FileDescriptor> GetAll()
+        {
+            return GetAllDescriptors();
+            //return GetDeep(RootDescriptor);
+        }
+
+        public IEnumerable<FileDescriptor> GetDeep(FileDescriptor descriptor)
+        {
+            yield return descriptor;
+            foreach (var child in descriptor.Children)
+            {
+                var childDescriptors = GetDeep(child);
+                foreach (var childDescriptor in childDescriptors)
+                {
+                    yield return childDescriptor;
+                }
+            }
+        } 
 
         /// <summary>
         /// Returns all file descriptors in the database.

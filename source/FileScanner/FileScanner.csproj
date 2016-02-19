@@ -41,6 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContentSignatureGenerator.cs" />
+    <Compile Include="Duplicates\Duplicate.cs" />
+    <Compile Include="Duplicates\FileDuplicateFinder.cs" />
+    <Compile Include="Duplicates\IDuplicateComparer.cs" />
+    <Compile Include="Duplicates\IDuplicateFinder.cs" />
     <Compile Include="IFileDescriptorProvider.cs" />
     <Compile Include="ISignatureGenerator.cs" />
     <Compile Include="JetbrainsAnnotations.cs" />
@@ -54,9 +58,10 @@
     <Compile Include="RevisitDescriptorProvider.cs" />
     <Compile Include="SampleSignatureGenerator.cs" />
     <Compile Include="SHA1HashGenerator.cs" />
+    <Compile Include="Duplicates\StatDuplicateComparer.cs" />
     <Compile Include="StatSignatureGenerator.cs" />
     <Compile Include="SystemFileDescriptorProvider.cs" />
-    <Compile Include="VolumeInfoHelper.cs" />
+    <Compile Include="VolumeInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

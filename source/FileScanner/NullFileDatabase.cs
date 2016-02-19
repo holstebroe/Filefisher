@@ -14,5 +14,10 @@ namespace FileScanner
         {
             // Does nothing
         }
+
+        public IEnumerable<FileDescriptor> GetAll()
+        {
+            return Enumerable.Empty<FileDescriptor>();
+        }
     }
 }
