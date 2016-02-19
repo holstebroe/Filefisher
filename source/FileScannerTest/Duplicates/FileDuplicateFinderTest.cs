@@ -9,7 +9,7 @@ namespace FileScannerTest.Duplicates
     public class FileDuplicateFinderTest
     {
         [Test]
-        public void ComparingEmptyDatabasesReturnsEmpty()
+        public void EmptyDatabasesReturnsEmpty()
         {
             var dba = new MemoryFileDatabase();
             var dbb = new MemoryFileDatabase();
@@ -35,23 +35,24 @@ namespace FileScannerTest.Duplicates
         }
 
         [Test]
-        public void ReturnsAllDuplicates()
+        public void ReturnsAllDuplicatePairs()
         {
             var dba = new MemoryFileDatabase();
-//            dba.UpdateDescriptor(new FileDescriptor("/") { IsRoot = true});
             dba.UpdateDescriptor(new FileDescriptor("A.txt") {StatHash = new byte[] { 1 } });
             dba.UpdateDescriptor(new FileDescriptor("B.txt") { StatHash = new byte[] { 2 } });
+
             var dbb = new MemoryFileDatabase();
-//            dbb.UpdateDescriptor(new FileDescriptor("/") { IsRoot = true });
             dbb.UpdateDescriptor(new FileDescriptor("C.txt") { StatHash = new byte[] { 1 } });
             dbb.UpdateDescriptor(new FileDescriptor("D.txt") { StatHash = new byte[] { 4 } });
             dbb.UpdateDescriptor(new FileDescriptor("E.txt") { StatHash = new byte[] { 2 } });
+            dbb.UpdateDescriptor(new FileDescriptor("F.txt") { StatHash = new byte[] { 2 } });
             var sut = new FileDuplicateFinder(new StatDuplicateComparer());
 
             var actual = sut.Find(dba, dbb).ToList();
-            Assert.That(actual, Has.Count.EqualTo(2));
-            Assert.That(actual.First().Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "A.txt", "C.txt"}));
-            Assert.That(actual.Last().Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "B.txt", "E.txt"}));
+            Assert.That(actual, Has.Count.EqualTo(3));
+            Assert.That(actual[0].Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "A.txt", "C.txt"}));
+            Assert.That(actual[1].Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "B.txt", "E.txt"}));
+            Assert.That(actual[2].Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "B.txt", "F.txt"}));
         }
     }
 }
