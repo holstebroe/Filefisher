@@ -16,8 +16,6 @@ namespace FilefisherConsole
             var options = new Options();
             if (!Parser.Default.ParseArguments(args, options))
             {
-                // Display the default usage information
-//                Console.WriteLine(options.GetUsage());
                 Environment.Exit(1);
             }
 
@@ -45,6 +43,8 @@ namespace FilefisherConsole
 
         private static FileDescriptor StatScanFolder(MemoryFileDatabase database, string baseFolder)
         {
+            VolumeInfo volumeInfo = new VolumeInfo(baseFolder);
+            Console.WriteLine($"Name = {volumeInfo.VolumeName}, Serial = {volumeInfo.SerialNumber}");
             var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
             var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator);
             var scanTimer = Stopwatch.StartNew();
@@ -128,17 +128,6 @@ namespace FilefisherConsole
         public string GetUsage()
         {
             return HelpText.AutoBuild(this, (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
-            //var help = new HelpText
-            //{
-            //    Heading = new HeadingInfo("<<app title>>", "<<app version>>"),
-            //    Copyright = new CopyrightInfo("<<app author>>", 2014),
-            //    AdditionalNewLineAfterOption = true,
-            //    AddDashesToOption = true
-            //};
-            //help.AddPreOptionsLine("<<license details here.>>");
-            //help.AddPreOptionsLine("Usage: app -p Someone");
-            //help.AddOptions(this);
-            //return help;
         }
     }
 }
