@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace FileScanner.Duplicates
@@ -13,7 +12,7 @@ namespace FileScanner.Duplicates
     /// </remarks>
     public class TopDescriptorDuplicateFinder : IDuplicateFinder
     {
-        private IDuplicateComparer duplicateComparer;
+        private readonly IDuplicateComparer duplicateComparer;
 
         public TopDescriptorDuplicateFinder(IDuplicateComparer duplicateComparer)
         {
@@ -25,18 +24,27 @@ namespace FileScanner.Duplicates
             var lookupB = databaseB.GetAll().ToLookup(x => x, duplicateComparer);
             var rootA = databaseA.GetRoot();
             if (rootA == null) return Enumerable.Empty<Duplicate>();
-            return FindChild(rootA, lookupB).ToList();
+            return CheckNode(rootA, lookupB).ToList();
         }
 
-        private IEnumerable<Duplicate> FindChild(FileDescriptor node, ILookup<FileDescriptor, FileDescriptor> lookupB)
+        private IEnumerable<Duplicate> CheckNode(FileDescriptor node, ILookup<FileDescriptor, FileDescriptor> lookupB)
         {
-            if (node.Children == null) yield break;
-            if (lookupB.Contains(node)) yield return new Duplicate(new [] {node}.Concat(lookupB[node]));
-            else
-            foreach (var duplicate in node.Children.SelectMany(x => FindChild(x, lookupB)))
+            if (lookupB.Contains(node))
             {
-                yield return duplicate;
+                var nodeArray = new[] {node};
+                var duplicateNodes = lookupB[node].ToList();
+                duplicateNodes.RemoveAll(x => x.FullPath == node.FullPath);
+                if (duplicateNodes.Any())
+                {
+                    yield return new Duplicate(nodeArray.Concat(duplicateNodes));
+                    yield break;
+                }
             }
+            if (node.Children != null)
+                foreach (var duplicate in node.Children.SelectMany(x => CheckNode(x, lookupB)))
+                {
+                    yield return duplicate;
+                }
         }
     }
 }

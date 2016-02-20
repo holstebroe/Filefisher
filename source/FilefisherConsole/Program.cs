@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Text;
 using CommandLine;
 using CommandLine.Text;
 using FileScanner;
+using FileScanner.Duplicates;
 
 namespace FilefisherConsole
 {
@@ -34,7 +36,22 @@ namespace FilefisherConsole
                 if (options.Verbose)
                 {
                     PrintDescriptorTree(rootDescriptor, descriptor => descriptor.StatHash);
-                    PrintDuplicates(database, descriptor => descriptor.StatHash);
+                }
+                if (options.ShowFileDuplicates)
+                {
+                    Console.WriteLine("FILE DUPLICATES");
+                    Console.WriteLine("----------");
+                    var duplicateFinder = new FileDuplicateFinder(new StatDuplicateComparer());
+                    var duplicates = duplicateFinder.Find(database, database);
+                    PrintDuplicates(duplicates);
+                }
+                if (options.ShowTopDuplicates)
+                {
+                    Console.WriteLine("TOP DUPLICATES");
+                    Console.WriteLine("----------");
+                    var duplicateFinder = new TopDescriptorDuplicateFinder(new StatDuplicateComparer());
+                    var duplicates = duplicateFinder.Find(database, database);
+                    PrintDuplicates(duplicates);
                 }
                 if (options.ReadContent)
                     UpdateContentSignatures(database, rootDescriptor);
@@ -66,31 +83,47 @@ namespace FilefisherConsole
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
             PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
-            PrintDuplicates(database, descriptor => descriptor.ContentHash);
+//            PrintDuplicates(database, descriptor => descriptor.ContentHash);
             Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second", descriptorCount,
                               contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
         }
 
-        private static void PrintDuplicates(MemoryFileDatabase database, Func<FileDescriptor, byte[]> signatureFunc)
+        private static void PrintDuplicates(IEnumerable<Duplicate> duplicates)
         {
-            var duplicatesByStat = database.GetAllDescriptors()
-                .Where(x => signatureFunc(x) != null)
-                .GroupBy(x => Convert.ToBase64String(signatureFunc(x)))
-                .Where(x => x.Count() > 1);
-            Console.WriteLine("DUPLICATES");
-            Console.WriteLine("----------");
-            foreach (var duplicateGroup in duplicatesByStat)
+            foreach (var duplicate in duplicates)
             {
-                Console.WriteLine("Duplicated signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
+//                Console.WriteLine("Duplicated signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
                 int duplicateIndex = 1;
-                foreach (var fileDescriptor in duplicateGroup)
+                foreach (var fileDescriptor in duplicate.Descriptors)
                 {
                     Console.WriteLine("[{0}] {1}", duplicateIndex, fileDescriptor.Path);
                     duplicateIndex++;
                 }
 
             }
+
         }
+
+        //private static void PrintDuplicates(MemoryFileDatabase database, Func<FileDescriptor, byte[]> signatureFunc)
+        //{
+        //    var duplicatesByStat = database.GetAllDescriptors()
+        //        .Where(x => signatureFunc(x) != null)
+        //        .GroupBy(x => Convert.ToBase64String(signatureFunc(x)))
+        //        .Where(x => x.Count() > 1);
+        //    Console.WriteLine("DUPLICATES");
+        //    Console.WriteLine("----------");
+        //    foreach (var duplicateGroup in duplicatesByStat)
+        //    {
+        //        Console.WriteLine("Duplicated signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
+        //        int duplicateIndex = 1;
+        //        foreach (var fileDescriptor in duplicateGroup)
+        //        {
+        //            Console.WriteLine("[{0}] {1}", duplicateIndex, fileDescriptor.Path);
+        //            duplicateIndex++;
+        //        }
+
+        //    }
+        //}
 
         private static void PrintDescriptorTree(FileDescriptor rootDescriptor, Func<FileDescriptor, byte[]> signatureFunc, string indent = "")
         {
@@ -121,8 +154,14 @@ namespace FilefisherConsole
         [Option('s', "save", Required = false, HelpText = "Save scan to database file")]
         public bool SaveDatabase { get; set; }
 
-        [Option('v', null, HelpText = "Print details during execution.")]
+        [Option('v', "verbose", HelpText = "Print details during execution.")]
         public bool Verbose { get; set; }
+
+        [Option("fileduplicates", HelpText = "Show all file duplicates.")]
+        public bool ShowFileDuplicates { get; set; }
+
+        [Option("topduplicates", HelpText = "Show top most path duplicates.")]
+        public bool ShowTopDuplicates { get; set; }
 
         [HelpOption]
         public string GetUsage()

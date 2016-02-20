@@ -38,16 +38,6 @@ namespace FileScannerTest.Duplicates
         [Test]
         public void OnlyFolderDuplicateReturnedForDuplicateHierarchy()
         {
-            var fileSystem = @"
-|A:1
- B:2
- |C1:3
-  |D1:4
-   E1:5
- |C2:3
-  |D2:4
-   E2:5
-";
             var builderA = new FileDescriptorBuilder("A", 1,
                 new FileDescriptorBuilder("B", 2),
                 new FileDescriptorBuilder("C1", 3,
@@ -65,6 +55,26 @@ namespace FileScannerTest.Duplicates
             var actual = sut.Find(dba, dbb).ToList();
             Assert.That(actual, Has.Count.EqualTo(1));
             Assert.That(actual.Single().Descriptors.Select(x => x.Name), Is.EqualTo(new [] {"C1", "C2"}));
+        }
+        [Test]
+        public void FolderDuplicateReturnedForSelfFinding()
+        {
+            var builder = new FileDescriptorBuilder("A", 1,
+                new FileDescriptorBuilder("B1", 2),
+                new FileDescriptorBuilder("C1", 3,
+                    new FileDescriptorBuilder("D1", 4,
+                        new FileDescriptorBuilder("E1", 5))),
+                new FileDescriptorBuilder("X", 10,
+                new FileDescriptorBuilder("B2", 11),
+                new FileDescriptorBuilder("C2", 3,
+                    new FileDescriptorBuilder("D2", 4,
+                        new FileDescriptorBuilder("E2", 5)))));
+            var db = new MemoryFileDatabase(builder.Build());
+            var sut = new TopDescriptorDuplicateFinder(new StatDuplicateComparer());
+
+            var actual = sut.Find(db, db).ToList();
+            Assert.That(actual, Has.Count.EqualTo(1));
+            Assert.That(actual.Single().Descriptors.Select(x => x.Name), Is.EquivalentTo(new [] {"C1", "C2"}));
         }
     }
 
