@@ -14,6 +14,8 @@ namespace FileScanner.Duplicates
     {
         private readonly IDuplicateComparer duplicateComparer;
 
+        public bool IgnoreEmptyFolders { get; set; } = true;
+
         public TopDescriptorDuplicateFinder(IDuplicateComparer duplicateComparer)
         {
             this.duplicateComparer = duplicateComparer;
@@ -29,6 +31,8 @@ namespace FileScanner.Duplicates
 
         private IEnumerable<Duplicate> CheckNode(FileDescriptor node, ILookup<FileDescriptor, FileDescriptor> lookupB)
         {
+            if (IgnoreEmptyFolders && node.IsFolder && (node.Children == null || !node.Children.Any()))
+                yield break;
             if (lookupB.Contains(node))
             {
                 var nodeArray = new[] {node};
