@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FileScanner
 {
@@ -42,10 +44,18 @@ namespace FileScanner
 
         public IEnumerable<FileDescriptor> Children { get; set; }
 
-
         public string GetBasePath()
         {
             return FullPath.Substring(0, FullPath.Length - Path.Length);
         }
+
+        public string FormatSize()
+        {
+            StringBuilder sb = new StringBuilder(11);
+            StrFormatByteSize(Size, sb, sb.Capacity);
+            return sb.ToString();
+        }
+        [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
+        private static extern long StrFormatByteSize(long fileSize, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer, int bufferSize);
     }
 }

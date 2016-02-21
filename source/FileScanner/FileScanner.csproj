@@ -48,6 +48,7 @@
     <Compile Include="Duplicates\IDuplicateFinder.cs" />
     <Compile Include="Duplicates\TopDescriptorDuplicateFinder.cs" />
     <Compile Include="IFileDescriptorProvider.cs" />
+    <Compile Include="IProgressTracker.cs" />
     <Compile Include="ISignatureGenerator.cs" />
     <Compile Include="JetbrainsAnnotations.cs" />
     <Compile Include="FileDescriptor.cs" />

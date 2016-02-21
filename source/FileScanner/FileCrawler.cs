@@ -13,12 +13,14 @@ namespace FileScanner
         private readonly IFileDatabase fileDatabase;
         private readonly IFileDescriptorProvider descriptorProvider;
         private readonly ISignatureGenerator signatureGenerator;
+        private readonly IProgressTracker progressTracker;
 
-        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider, ISignatureGenerator signatureGenerator)
+        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider, ISignatureGenerator signatureGenerator, IProgressTracker progressTracker)
         {
             this.fileDatabase = fileDatabase;
             this.descriptorProvider = descriptorProvider;
             this.signatureGenerator = signatureGenerator;
+            this.progressTracker = progressTracker;
         }
 
         public FileDescriptor ScanDirectory(string baseDirectory)
@@ -30,13 +32,20 @@ namespace FileScanner
 
         public void ScanDirectory(FileDescriptor directoryDescriptor)
         {
+            progressTracker.Start();
+            ScanSubDirectory(directoryDescriptor);
+            progressTracker.Stop();
+        }
+
+        private void ScanSubDirectory(FileDescriptor directoryDescriptor)
+        {
             try
             {
                 var subDescriptors = ScanFiles(directoryDescriptor);
                 var subDirectories = descriptorProvider.GetDirectories(directoryDescriptor);
                 foreach (var subDirectory in subDirectories)
                 {
-                    ScanDirectory(subDirectory);
+                    ScanSubDirectory(subDirectory);
                     subDescriptors.Add(subDirectory);
                 }
                 directoryDescriptor.Children = subDescriptors;
@@ -62,6 +71,7 @@ namespace FileScanner
                 }
                 signatureGenerator.UpdateFileSignature(descriptor);
                 fileDatabase.UpdateDescriptor(descriptor);
+                progressTracker.Increment(descriptor.FullPath);
             }
             return descriptors;
         }

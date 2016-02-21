@@ -83,8 +83,9 @@ namespace FilefisherConsole
                 VolumeId = volumeInfo.SerialNumber,
                 VolumeLabel = volumeInfo.VolumeName
             };
+            var progressTracker = new ConsoleProgressTracker();
             var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
-            var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator);
+            var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator, progressTracker);
             var scanTimer = Stopwatch.StartNew();
             var rootDescriptor = crawler.ScanDirectory(baseFolder);
             scanTimer.Stop();
@@ -96,14 +97,15 @@ namespace FilefisherConsole
 
         private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
         {
+            Console.WriteLine("Updating content signatures");
+            var progressTracker = new ConsoleProgressTracker(database.GetAllDescriptors().Count());
             var contentCrawler = new FileCrawler(new NullFileDatabase(), new RevisitDescriptorProvider(),
-                                                 new SampleSignatureGenerator(new SHA1HashGenerator()));
+                                                 new SampleSignatureGenerator(new SHA1HashGenerator()), progressTracker);
             var contentTimer = Stopwatch.StartNew();
             contentCrawler.ScanDirectory(rootDescriptor);
-            database.SaveDefault();
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
-            PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
+//            PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
 //            PrintDuplicates(database, descriptor => descriptor.ContentHash);
             Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second", descriptorCount,
                               contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
@@ -114,11 +116,10 @@ namespace FilefisherConsole
             int duplicateSetIndex = 1;
             foreach (var duplicate in duplicates.OrderBy(x => x.Descriptors.First().FullPath))
             {
-//                Console.WriteLine("Duplicated signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
                 int duplicateIndex = 1;
                 foreach (var fileDescriptor in duplicate.Descriptors)
                 {
-                    Console.WriteLine($"[{duplicateSetIndex:D5}:{duplicateIndex}] {fileDescriptor.Path}");
+                    Console.WriteLine($"[{duplicateSetIndex:D5}:{duplicateIndex}] {fileDescriptor.Path} {fileDescriptor.FormatSize()}");
                     duplicateIndex++;
                 }
                 Console.WriteLine();
