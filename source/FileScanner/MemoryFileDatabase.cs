@@ -20,11 +20,11 @@ namespace FileScanner
         {
             
         }
-        public MemoryFileDatabase(FileDescriptor fileDescriptor)
+        public MemoryFileDatabase(FileDescriptor rootDescriptor)
         {
-            UpdateDescriptor(fileDescriptor);
-            RootDescriptor = fileDescriptor;
-            AddChildren(fileDescriptor);
+            UpdateDescriptor(rootDescriptor);
+            RootDescriptor = rootDescriptor;
+            AddChildren(rootDescriptor);
         }
 
         private void AddChildren(FileDescriptor descriptor)
@@ -39,13 +39,16 @@ namespace FileScanner
 
         public FileDescriptor RootDescriptor { get; private set; }
 
+        public RootInfo RootInfo { get; set; }
+
         public void UpdateDescriptor(FileDescriptor fileDescriptor)
         {
             descriptorMap[fileDescriptor.Path] = fileDescriptor;
             if (fileDescriptor.IsRoot)
             {
                 if (RootDescriptor != null && fileDescriptor.Path != RootDescriptor.Path)
-                    throw new InvalidOperationException(string.Format("Cannot assign {0} as root descriptor. Root descriptor has already been assigned to {1}", fileDescriptor.Path, RootDescriptor.Path));
+                    throw new InvalidOperationException(
+                        $"Cannot assign {fileDescriptor.Path} as root descriptor. Root descriptor has already been assigned to {RootDescriptor.Path}");
                 RootDescriptor = fileDescriptor;
             }
         }
@@ -92,7 +95,7 @@ namespace FileScanner
             var programDataFolder = Path.Combine(applicationDataFolder, ApplicationDataFolderName);
             if (!Directory.Exists(programDataFolder))
                 Directory.CreateDirectory(programDataFolder);
-            var databaseFileName = rootDescriptor.Name + DefaultFileExtension;
+            var databaseFileName = RootInfo.GenerateDatabaseFileName() + DefaultFileExtension;
             var databasePath = Path.Combine(programDataFolder, databaseFileName);
             return databasePath;
         }
@@ -118,6 +121,7 @@ namespace FileScanner
                     formatter.Serialize(zipStream, this);
                 }
             }
+            Console.WriteLine($"Saved database to {fileName}");
         }
 
         /// <summary>

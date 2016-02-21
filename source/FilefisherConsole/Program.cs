@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using CommandLine;
 using CommandLine.Text;
 using FileScanner;
@@ -11,7 +10,7 @@ using FileScanner.Duplicates;
 
 namespace FilefisherConsole
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
@@ -22,46 +21,68 @@ namespace FilefisherConsole
             }
 
             var baseFolder = options.ScanFolder;
-            if (!Directory.Exists(baseFolder))
-            {
-                Console.WriteLine("No such directory: {0}", baseFolder);
-                ShowUsage();
-            }
             var database = new MemoryFileDatabase();
             if (!string.IsNullOrEmpty(options.ScanFolder))
             {
-                var rootDescriptor = StatScanFolder(database, baseFolder);
+                FileDescriptor rootDescriptor = null;
+                if (Directory.Exists(options.ScanFolder))
+                {
+                    rootDescriptor = StatScanFolder(database, baseFolder);
+                }
+                else
+                if (File.Exists(options.ScanFolder))
+                {
+                    database = MemoryFileDatabase.Load(options.ScanFolder);
+                    rootDescriptor = database.RootDescriptor;
+                }
+                else
+                {
+                    Console.WriteLine($"Could not open {options.ScanFolder}");
+                    Console.WriteLine(options.GetUsage());
+                    Environment.Exit(1);
+                }
+                if (options.ReadContent)
+                    UpdateContentSignatures(database, rootDescriptor);
                 if (options.SaveDatabase)
                     database.SaveDefault();
                 if (options.Verbose)
                 {
                     PrintDescriptorTree(rootDescriptor, descriptor => descriptor.StatHash);
                 }
+
+                var duplicateComparer = options.DuplicateMode == DuplicateMode.Stat
+                    ? (IDuplicateComparer) new StatDuplicateComparer()
+                    : new ContentDuplicateComparer();
+
                 if (options.ShowFileDuplicates)
                 {
                     Console.WriteLine("FILE DUPLICATES");
-                    Console.WriteLine("----------");
-                    var duplicateFinder = new FileDuplicateFinder(new StatDuplicateComparer());
+                    Console.WriteLine("---------------");
+                    var duplicateFinder = new FileDuplicateFinder(duplicateComparer);
                     var duplicates = duplicateFinder.Find(database, database);
                     PrintDuplicates(duplicates);
                 }
                 if (options.ShowTopDuplicates)
                 {
                     Console.WriteLine("TOP DUPLICATES");
-                    Console.WriteLine("----------");
-                    var duplicateFinder = new TopDescriptorDuplicateFinder(new StatDuplicateComparer());
+                    Console.WriteLine("--------------");
+                    var duplicateFinder = new TopDescriptorDuplicateFinder(duplicateComparer);
                     var duplicates = duplicateFinder.Find(database, database);
                     PrintDuplicates(duplicates);
                 }
-                if (options.ReadContent)
-                    UpdateContentSignatures(database, rootDescriptor);
             }            
         }
 
         private static FileDescriptor StatScanFolder(MemoryFileDatabase database, string baseFolder)
         {
-            VolumeInfo volumeInfo = new VolumeInfo(baseFolder);
+            var volumeInfo = new VolumeInfo(baseFolder);
             Console.WriteLine($"Name = {volumeInfo.VolumeName}, Serial = {volumeInfo.SerialNumber}");
+            database.RootInfo = new RootInfo
+            {
+                RootPath = baseFolder,
+                VolumeId = volumeInfo.SerialNumber,
+                VolumeLabel = volumeInfo.VolumeName
+            };
             var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
             var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator);
             var scanTimer = Stopwatch.StartNew();
@@ -90,16 +111,18 @@ namespace FilefisherConsole
 
         private static void PrintDuplicates(IEnumerable<Duplicate> duplicates)
         {
-            foreach (var duplicate in duplicates)
+            int duplicateSetIndex = 1;
+            foreach (var duplicate in duplicates.OrderBy(x => x.Descriptors.First().FullPath))
             {
 //                Console.WriteLine("Duplicated signature {0}", Convert.ToBase64String(signatureFunc(duplicateGroup.First())));
                 int duplicateIndex = 1;
                 foreach (var fileDescriptor in duplicate.Descriptors)
                 {
-                    Console.WriteLine("[{0}] {1}", duplicateIndex, fileDescriptor.Path);
+                    Console.WriteLine($"[{duplicateSetIndex:D5}:{duplicateIndex}] {fileDescriptor.Path}");
                     duplicateIndex++;
                 }
-
+                Console.WriteLine();
+                duplicateSetIndex++;
             }
 
         }
@@ -148,7 +171,7 @@ namespace FilefisherConsole
         [Option('f', "folder", Required = true, HelpText = "Folder to scan.")]
         public string ScanFolder { get; set; }
 
-        [Option('c', "content", Required = false, HelpText = "Read content hash for each file")]
+        [Option("readcontent", Required = false, HelpText = "Read content hash for each file")]
         public bool ReadContent { get; set; }
 
         [Option('s', "save", Required = false, HelpText = "Save scan to database file")]
@@ -156,6 +179,9 @@ namespace FilefisherConsole
 
         [Option('v', "verbose", HelpText = "Print details during execution.")]
         public bool Verbose { get; set; }
+
+        [Option("duplicateMode", HelpText = "Comparison mode when searching for duplicates [Stat, Content].", DefaultValue = DuplicateMode.Stat)]
+        public DuplicateMode DuplicateMode { get; set; }
 
         [Option("fileduplicates", HelpText = "Show all file duplicates.")]
         public bool ShowFileDuplicates { get; set; }
@@ -168,5 +194,11 @@ namespace FilefisherConsole
         {
             return HelpText.AutoBuild(this, (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
         }
+    }
+
+    public enum DuplicateMode
+    {
+        Stat,
+        Content
     }
 }
