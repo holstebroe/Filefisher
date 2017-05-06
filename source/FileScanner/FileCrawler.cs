@@ -25,7 +25,7 @@ namespace FileScanner
 
         public FileDescriptor ScanDirectory(string baseDirectory)
         {
-            var baseDescriptor = new FileDescriptor(baseDirectory) { IsRoot = true};
+            var baseDescriptor = new FileDescriptor(baseDirectory) { IsRoot = true, IsFolder = true};
             ScanDirectory(baseDescriptor);
             return baseDescriptor;
         }
@@ -50,12 +50,19 @@ namespace FileScanner
                 }
                 directoryDescriptor.Children = subDescriptors;
                 signatureGenerator.UpdateFolderSignature(directoryDescriptor);
+                UpdateFolderSize(directoryDescriptor);
                 fileDatabase.UpdateDescriptor(directoryDescriptor);
             }
             catch (UnauthorizedAccessException)
             {
                 // TODO log that we were not allowed to scan the directory
             }
+        }
+
+        private void UpdateFolderSize(FileDescriptor descriptor)
+        {
+            if (descriptor.Children == null || !descriptor.IsFolder) return;
+            descriptor.Size = descriptor.Children.Select(x => x.Size).Sum();
         }
 
         private List<FileDescriptor> ScanFiles(FileDescriptor directoryDescriptor)

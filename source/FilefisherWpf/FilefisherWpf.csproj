@@ -62,6 +62,12 @@
     <Compile Include="Views\FileSystemView.xaml.cs">
       <DependentUpon>FileSystemView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\FileView.xaml.cs">
+      <DependentUpon>FileView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FolderView.xaml.cs">
+      <DependentUpon>FolderView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -78,6 +84,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\FileSystemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FileView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FolderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

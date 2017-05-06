@@ -33,5 +33,13 @@ namespace FilefisherWpf.Views
             get { return (FileSystemViewModel) GetValue(ViewModelProperty); }
             set { SetValue(ViewModelProperty, value); }
         }
+
+        private void TreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (ViewModel == null) return;
+            ViewModel.SelectedDescriptor = (FileDescriptorViewModel) e.NewValue;
+        }
+
+
     }
 }
