@@ -4,6 +4,6 @@ namespace FileScanner.Duplicates
 {
     interface IDuplicateFinder
     {
-        IEnumerable<Duplicate> Find(IFileDatabase databaseA, IFileDatabase databaseB);
+        IEnumerable<Duplicate> FindDuplicates(IFileDatabase databaseA, IFileDatabase databaseB);
     }
 }

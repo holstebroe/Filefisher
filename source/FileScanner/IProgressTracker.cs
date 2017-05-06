@@ -7,17 +7,18 @@ namespace FileScanner
     {
         void Start();
         void Stop();
+        void Restart();
         void Increment(string currentItem);
     }
 
     public class ConsoleProgressTracker : IProgressTracker
     {
-        private readonly int maxCount;
+        private long maxCount;
         private readonly Stopwatch stopwatch = new Stopwatch();
         private DateTime lastIncrement;
         private long counter;
 
-        public ConsoleProgressTracker(int maxCount = -1)
+        public ConsoleProgressTracker(long maxCount = -1)
         {
             this.maxCount = maxCount;
         }
@@ -28,6 +29,12 @@ namespace FileScanner
             lastIncrement = DateTime.Now;
             counter = 0;
             Console.WriteLine();
+        }
+
+        public void Restart()
+        {
+            maxCount = counter;
+            Start();
         }
 
         public void Stop()
@@ -71,6 +78,10 @@ namespace FileScanner
         }
 
         public void Stop()
+        {
+        }
+
+        public void Restart()
         {
         }
 

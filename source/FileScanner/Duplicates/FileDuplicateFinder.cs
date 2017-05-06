@@ -13,7 +13,16 @@ namespace FileScanner.Duplicates
             this.duplicateComparer = duplicateComparer;
         }
 
-        public IEnumerable<Duplicate> Find(IFileDatabase databaseA, IFileDatabase databaseB)
+        public IEnumerable<Duplicate> FindDuplicates(IFileDatabase databaseA, IFileDatabase databaseB)
+        {
+            var allADescriptors = databaseA.GetAll();
+            var allBDescriptors = databaseB.GetAll();
+
+            var joinedDescriptors = allADescriptors.Join(allBDescriptors, x=>x, x => x, (fda, fdb) => new Duplicate(new [] {fda, fdb}), duplicateComparer);
+
+            return joinedDescriptors.ToList();
+        }
+        public IEnumerable<Duplicate> FindUnique(IFileDatabase databaseA, IFileDatabase databaseB)
         {
             var allADescriptors = databaseA.GetAll();
             var allBDescriptors = databaseB.GetAll();

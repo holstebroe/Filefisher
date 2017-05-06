@@ -15,7 +15,7 @@ namespace FileScannerTest.Duplicates
             var dbb = new MemoryFileDatabase();
             var sut = new FileDuplicateFinder(new StatDuplicateComparer());
 
-            var actual = sut.Find(dba, dbb);
+            var actual = sut.FindDuplicates(dba, dbb);
             Assert.That(actual, Is.Empty);
         }
 
@@ -30,7 +30,7 @@ namespace FileScannerTest.Duplicates
             dbb.UpdateDescriptor(new FileDescriptor("D.txt") { StatHash = new byte[] { 4 } });
             var sut = new FileDuplicateFinder(new StatDuplicateComparer());
 
-            var actual = sut.Find(dba, dbb);
+            var actual = sut.FindDuplicates(dba, dbb);
             Assert.That(actual, Is.Empty);
         }
 
@@ -48,7 +48,7 @@ namespace FileScannerTest.Duplicates
             dbb.UpdateDescriptor(new FileDescriptor("F.txt") { StatHash = new byte[] { 2 } });
             var sut = new FileDuplicateFinder(new StatDuplicateComparer());
 
-            var actual = sut.Find(dba, dbb).ToList();
+            var actual = sut.FindDuplicates(dba, dbb).ToList();
             Assert.That(actual, Has.Count.EqualTo(3));
             Assert.That(actual[0].Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "A.txt", "C.txt"}));
             Assert.That(actual[1].Descriptors.Select(x => x.Name), Is.EqualTo(new [] { "B.txt", "E.txt"}));

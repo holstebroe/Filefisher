@@ -21,7 +21,7 @@ namespace FileScanner.Duplicates
             this.duplicateComparer = duplicateComparer;
         }
 
-        public IEnumerable<Duplicate> Find(IFileDatabase databaseA, IFileDatabase databaseB)
+        public IEnumerable<Duplicate> FindDuplicates(IFileDatabase databaseA, IFileDatabase databaseB)
         {
             var lookupB = databaseB.GetAll().ToLookup(x => x, duplicateComparer);
             var rootA = databaseA.GetRoot();

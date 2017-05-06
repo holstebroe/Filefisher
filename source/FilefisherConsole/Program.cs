@@ -8,6 +8,13 @@ using CommandLine.Text;
 using FileScanner;
 using FileScanner.Duplicates;
 
+// Options examples
+// -f C:\Temp\DCIM_import_done\Incoming --duplicateMode=Content --readcontent -d "c:\Temp\dcim.fdb" -p
+// -f C:\Temp\MyTrack --duplicateMode=Content --readcontent -d "c:\Temp\mytrack.fdb" -p
+// --duplicateMode=Content --fileduplicates -d "c:\Temp\dcim.fdb" -c "C:\ProgramData\Filefisher\3155494950_C__Users_Søren_Pictures.fdb"
+// --duplicateMode=Content --fileduplicates -d "c:\Temp\dcim.fdb" -c "C:\Temp\mytrack.fdb"
+
+
 namespace FilefisherConsole
 {
     static class Program
@@ -22,15 +29,25 @@ namespace FilefisherConsole
 
             var baseFolder = options.ScanFolder;
             var database = new MemoryFileDatabase();
+
+            var progressTracker = options.ShowProgress
+                ? (IProgressTracker)new ConsoleProgressTracker(database.GetAllDescriptors().Count())
+                : new NullProgressTracker();
+
+
+            if (File.Exists(options.DatabaseFile))
+            {
+                database = MemoryFileDatabase.Load(options.DatabaseFile);
+            }
+
             if (!string.IsNullOrEmpty(options.ScanFolder))
             {
                 FileDescriptor rootDescriptor = null;
                 if (Directory.Exists(options.ScanFolder))
                 {
-                    rootDescriptor = StatScanFolder(database, baseFolder);
+                    rootDescriptor = StatScanFolder(database, baseFolder, progressTracker);
                 }
-                else
-                if (File.Exists(options.ScanFolder))
+                else if (File.Exists(options.ScanFolder))
                 {
                     database = MemoryFileDatabase.Load(options.ScanFolder);
                     rootDescriptor = database.RootDescriptor;
@@ -41,39 +58,51 @@ namespace FilefisherConsole
                     Console.WriteLine(options.GetUsage());
                     Environment.Exit(1);
                 }
+
                 if (options.ReadContent)
-                    UpdateContentSignatures(database, rootDescriptor);
-                if (options.SaveDatabase)
-                    database.SaveDefault();
+                {
+                    progressTracker.Restart();
+                    UpdateContentSignatures(database, rootDescriptor, progressTracker); 
+                }
+                if (!string.IsNullOrEmpty(options.DatabaseFile))
+                    database.Save(options.DatabaseFile);
                 if (options.Verbose)
                 {
                     PrintDescriptorTree(rootDescriptor, descriptor => descriptor.StatHash);
                 }
+            }
 
-                var duplicateComparer = options.DuplicateMode == DuplicateMode.Stat
-                    ? (IDuplicateComparer) new StatDuplicateComparer()
+            var duplicateComparer = options.DuplicateMode == DuplicateMode.Stat
+                    ? (IDuplicateComparer)new StatDuplicateComparer()
                     : new ContentDuplicateComparer();
 
-                if (options.ShowFileDuplicates)
-                {
-                    Console.WriteLine("FILE DUPLICATES");
-                    Console.WriteLine("---------------");
-                    var duplicateFinder = new FileDuplicateFinder(duplicateComparer);
-                    var duplicates = duplicateFinder.Find(database, database);
-                    PrintDuplicates(duplicates);
-                }
-                if (options.ShowTopDuplicates)
-                {
-                    Console.WriteLine("TOP DUPLICATES");
-                    Console.WriteLine("--------------");
-                    var duplicateFinder = new TopDescriptorDuplicateFinder(duplicateComparer);
-                    var duplicates = duplicateFinder.Find(database, database);
-                    PrintDuplicates(duplicates);
-                }
-            }            
+            var databaseA = database;
+
+            var databaseB = string.IsNullOrEmpty(options.CompareDatabaseFile) 
+                ? database 
+                : MemoryFileDatabase.Load(options.CompareDatabaseFile);
+
+            if (options.ShowFileDuplicates)
+            {
+                Console.WriteLine("FILE DUPLICATES");
+                Console.WriteLine("---------------");
+                Console.WriteLine($"Files in {databaseA.RootDescriptor.Path}: {databaseA.GetAllDescriptors()}");
+                Console.WriteLine($"Files in {databaseB.RootDescriptor.Path}: {databaseB.GetAllDescriptors()}");
+                var duplicateFinder = new FileDuplicateFinder(duplicateComparer);
+                var duplicates = duplicateFinder.FindDuplicates(databaseA, databaseB);
+                PrintDuplicates(duplicates);
+            }
+            if (options.ShowTopDuplicates)
+            {
+                Console.WriteLine("TOP DUPLICATES");
+                Console.WriteLine("--------------");
+                var duplicateFinder = new TopDescriptorDuplicateFinder(duplicateComparer);
+                var duplicates = duplicateFinder.FindDuplicates(databaseA, databaseB);
+                PrintDuplicates(duplicates);
+            }
         }
 
-        private static FileDescriptor StatScanFolder(MemoryFileDatabase database, string baseFolder)
+        private static FileDescriptor StatScanFolder(MemoryFileDatabase database, string baseFolder, IProgressTracker progressTracker)
         {
             var volumeInfo = new VolumeInfo(baseFolder);
             Console.WriteLine($"Name = {volumeInfo.VolumeName}, Serial = {volumeInfo.SerialNumber}");
@@ -83,7 +112,6 @@ namespace FilefisherConsole
                 VolumeId = volumeInfo.SerialNumber,
                 VolumeLabel = volumeInfo.VolumeName
             };
-            var progressTracker = new ConsoleProgressTracker();
             var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
             var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator, progressTracker);
             var scanTimer = Stopwatch.StartNew();
@@ -91,22 +119,21 @@ namespace FilefisherConsole
             scanTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
             Console.WriteLine("Scanned {0} entries in {1}. {2} stat scans per second", descriptorCount, scanTimer.Elapsed,
-                1000*descriptorCount/scanTimer.ElapsedMilliseconds);
+                1000 * descriptorCount / scanTimer.ElapsedMilliseconds);
             return rootDescriptor;
         }
 
-        private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor)
+        private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor, IProgressTracker progressTracker)
         {
             Console.WriteLine("Updating content signatures");
-            var progressTracker = new ConsoleProgressTracker(database.GetAllDescriptors().Count());
             var contentCrawler = new FileCrawler(new NullFileDatabase(), new RevisitDescriptorProvider(),
                                                  new SampleSignatureGenerator(new SHA1HashGenerator()), progressTracker);
             var contentTimer = Stopwatch.StartNew();
             contentCrawler.ScanDirectory(rootDescriptor);
             contentTimer.Stop();
             var descriptorCount = database.GetAllDescriptors().Count();
-//            PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
-//            PrintDuplicates(database, descriptor => descriptor.ContentHash);
+            //            PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
+            //            PrintDuplicates(database, descriptor => descriptor.ContentHash);
             Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second", descriptorCount,
                               contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
         }
@@ -169,17 +196,23 @@ namespace FilefisherConsole
 
     class Options
     {
-        [Option('f', "folder", Required = true, HelpText = "Folder to scan.")]
+        [Option('f', "folder", Required = false, HelpText = "Folder to scan.")]
         public string ScanFolder { get; set; }
 
         [Option("readcontent", Required = false, HelpText = "Read content hash for each file")]
         public bool ReadContent { get; set; }
 
-        [Option('s', "save", Required = false, HelpText = "Save scan to database file")]
-        public bool SaveDatabase { get; set; }
+        [Option('d', "database", Required = false, HelpText = "Scan database file")]
+        public string DatabaseFile { get; set; }
+
+        [Option('c', "comparedatabase", Required = false, HelpText = "Scan comparison database file")]
+        public string CompareDatabaseFile { get; set; }
 
         [Option('v', "verbose", HelpText = "Print details during execution.")]
         public bool Verbose { get; set; }
+
+        [Option('p', "progress", HelpText = "Show scan progress.")]
+        public bool ShowProgress { get; set; }
 
         [Option("duplicateMode", HelpText = "Comparison mode when searching for duplicates [Stat, Content].", DefaultValue = DuplicateMode.Stat)]
         public DuplicateMode DuplicateMode { get; set; }
