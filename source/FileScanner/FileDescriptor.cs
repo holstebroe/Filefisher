@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -57,5 +58,18 @@ namespace FileScanner
         }
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
         private static extern long StrFormatByteSize(long fileSize, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer, int bufferSize);
+
+        public void UpdateFolderSize()
+        {
+            if (!IsFolder) return;
+            if (Size != 0) return;
+            if (IsFolder)
+                foreach (var descriptor in Children)
+                {
+                    descriptor.UpdateFolderSize();
+                }
+            Size = Children.Select(x => x.Size).Sum();
+        }
+
     }
 }
