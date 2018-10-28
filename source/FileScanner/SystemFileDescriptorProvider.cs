@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -23,7 +24,7 @@ namespace FileScanner
             var directoryInfo = new DirectoryInfo(descriptor.FullPath);
             var subDirectories = directoryInfo.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly);
             var basePath = descriptor.GetBasePath();
-            return subDirectories.Select(x => CreateFileDescriptor(basePath, x));
+            return subDirectories.Select(x => CreateFileDescriptor(basePath, x)).Where(x => x != null);
         }
 
         /// <summary>
@@ -31,14 +32,24 @@ namespace FileScanner
         /// </summary>
         private FileDescriptor CreateFileDescriptor(string basePath, FileInfo fileInfo)
         {
-            var descriptor = new FileDescriptor(basePath, fileInfo.FullName)
-                {
-                    IsFolder = false,
-                    CreateTime = fileInfo.CreationTimeUtc,
-                    ModifyTime = fileInfo.LastWriteTimeUtc,
-                    Size = fileInfo.Length
-                };
-            return descriptor;
+            string fullName;
+            try
+            {
+                fullName = fileInfo.FullName;
+            }
+            // File name not supported, could be caused by a mounted linux drive with filenames not valid in Windows.
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+
+            return new FileDescriptor(basePath, fullName)
+            {
+                IsFolder = false,
+                CreateTime = fileInfo.CreationTimeUtc,
+                ModifyTime = fileInfo.LastWriteTimeUtc,
+                Size = fileInfo.Length
+            };
         }
 
         /// <summary>

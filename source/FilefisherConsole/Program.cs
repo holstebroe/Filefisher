@@ -40,12 +40,14 @@ namespace FilefisherConsole
                 database = MemoryFileDatabase.Load(options.DatabaseFile);
             }
 
-            if (!string.IsNullOrEmpty(options.ScanFolder))
+            if (!string.IsNullOrEmpty(baseFolder))
             {
                 FileDescriptor rootDescriptor = null;
-                if (Directory.Exists(options.ScanFolder))
+                if (Directory.Exists(baseFolder))
                 {
-                    rootDescriptor = StatScanFolder(database, baseFolder, progressTracker);
+                    var fullBaseFolder = Path.GetFullPath(baseFolder);
+
+                    rootDescriptor = StatScanFolder(database, fullBaseFolder, progressTracker);
                 }
                 else if (File.Exists(options.ScanFolder))
                 {
@@ -58,6 +60,10 @@ namespace FilefisherConsole
                     Console.WriteLine(options.GetUsage());
                     Environment.Exit(1);
                 }
+
+                // Save database before long running content update to allow the user to abort.
+                if (!string.IsNullOrEmpty(options.DatabaseFile))
+                    database.Save(options.DatabaseFile);
 
                 if (options.ReadContent)
                 {

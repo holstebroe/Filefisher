@@ -44,6 +44,8 @@ namespace FileScanner
         public IEnumerable<FileDescriptor> LookupByContent(FileDescriptor descriptor)
         {
             var key = GetContentKeyOrNull(descriptor);
+            if (key == null)
+                return Enumerable.Empty<FileDescriptor>();
             return contentLookup.TryGetValue(key, out var descriptors) ? descriptors : Enumerable.Empty<FileDescriptor>();
         }
     }

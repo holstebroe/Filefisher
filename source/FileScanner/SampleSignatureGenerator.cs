@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace FileScanner
@@ -21,10 +22,18 @@ namespace FileScanner
 
         public void UpdateFileSignature(FileDescriptor descriptor)
         {
-            using (var stream = File.OpenRead(descriptor.Path))
+            try
             {
-                var sample = LoadSample(stream);
-                descriptor.ContentHash = hashGenerator.Generate(sample);
+                using (var stream = File.OpenRead(descriptor.FullPath))
+                {
+                    var sample = LoadSample(stream);
+                    descriptor.ContentHash = hashGenerator.Generate(sample);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to update file signature for {descriptor.FullPath}: {e.Message}");
             }
         }
 

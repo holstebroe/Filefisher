@@ -25,7 +25,8 @@ namespace FileScanner
 
         public FileDescriptor ScanDirectory(string baseDirectory)
         {
-            var baseDescriptor = new FileDescriptor(baseDirectory) { IsRoot = true, IsFolder = true};
+            var fullBasePath = Path.GetFullPath(baseDirectory);
+            var baseDescriptor = new FileDescriptor(baseDirectory, fullBasePath) { IsRoot = true, IsFolder = true};
             ScanDirectory(baseDescriptor);
             return baseDescriptor;
         }
