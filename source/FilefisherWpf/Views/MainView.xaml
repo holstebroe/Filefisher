@@ -27,6 +27,10 @@
         </StackPanel>
         <DockPanel>
             <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                    <TextBlock Text="Filter"/>
+                    <ComboBox Margin="5 0 0 0" ItemsSource="{Binding FilterItems}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding SelectedFilter}"/>
+                </StackPanel>
                 <ContentPresenter  DockPanel.Dock="Right" Content="{Binding FileSystemViewModel.SelectedDescriptor}" MinWidth="150">
                     <ContentPresenter.Resources>
                         <DataTemplate DataType="{x:Type viewModels:FileViewModel}">

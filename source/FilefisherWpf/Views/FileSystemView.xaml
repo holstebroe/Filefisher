@@ -13,13 +13,17 @@
                 DataType="{x:Type viewModels:FolderViewModel}" 
                 ItemsSource="{Binding Children}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Name}" Foreground="{Binding Color}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" Source="../Images/folder.png"/>
+                        <TextBlock Margin="5,0,0,0" Text="{Binding Name}" Foreground="{Binding Color}"/>
+                    </StackPanel>
                 </StackPanel>
             </HierarchicalDataTemplate>
             <DataTemplate 
                 DataType="{x:Type viewModels:FileViewModel}" >
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Name}" Foreground="{Binding Color}"/>
+                    <Image Width="16" Height="16" Source="../Images/document.png"/>
+                    <TextBlock Margin="5,0,0,0" Text="{Binding Name}" Foreground="{Binding Color}"/>
                 </StackPanel>
             </DataTemplate>
         </TreeView.Resources>

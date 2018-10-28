@@ -110,7 +110,12 @@ namespace FilefisherConsole
             {
                 RootPath = baseFolder,
                 VolumeId = volumeInfo.SerialNumber,
-                VolumeLabel = volumeInfo.VolumeName
+                VolumeLabel = volumeInfo.VolumeName,
+                FileSystem = volumeInfo.FileSystem,
+                DriveType = volumeInfo.DriveType,
+                TotalSize = volumeInfo.TotalSize,
+                TotalFreeSpace = volumeInfo.TotalFreeSpace
+
             };
             var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
             var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator, progressTracker);

@@ -10,6 +10,10 @@ namespace FileScanner
         public string RootPath { get; set; }
         public string VolumeId { get; set; }
         public string VolumeLabel { get; set; }
+        public string FileSystem { get; set; }
+        public string DriveType { get; set; }
+        public long TotalSize { get; set; }
+        public long TotalFreeSpace { get; set; }
 
         public string GenerateDatabaseFileName()
         {

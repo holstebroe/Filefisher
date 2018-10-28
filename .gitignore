@@ -13,3 +13,5 @@ source/FileScannerTest/bin/Debug/
 source/FileScannerTest/obj/Debug/
 **\Debug/
 **/bin/Release/
+
+/source/.vs/

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Data;
 using System.Windows.Media;
 using FileScanner;
 
@@ -13,6 +14,8 @@ namespace FilefisherWpf.ViewModels
         private FileDescriptorViewModel selectedDescriptor;
         private MemoryFileDatabase referenceSystem;
         private DescriptorLookup descriptorLookup = new DescriptorLookup();
+        private FilterMode filterMode;
+
         public FileSystemViewModel(MemoryFileDatabase database)
         {
             this.database = database;
@@ -49,9 +52,34 @@ namespace FilefisherWpf.ViewModels
 
         public string ReferenceRootInfo => FormatRootInfo(referenceSystem?.RootInfo);
 
+        public FilterMode FilterMode
+        {
+            get => filterMode;
+            set
+            {
+                filterMode = value;
+                IFileDescriptorFilter filter;
+                switch (filterMode)
+                {
+                    case FilterMode.ShowAll:
+                        filter = new ShowAllFileDescriptorFilter();
+                        break;
+                    case FilterMode.ShowDuplicates:
+                        filter = new ShowDuplicatesFilter();
+                        break;
+                    case FilterMode.ShowUnique:
+                        filter = new ShowUniqueFilter();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                Folders.Single().UpdateFilter(filter);
+                NotifyPropertyChanged(nameof(Folders));
+            }
+        }
     }
 
-    public class FileDescriptorViewModel
+    public class FileDescriptorViewModel : ViewModelBase
     {
         protected readonly FileDescriptor descriptor;
         protected DescriptorLookup descriptorLookup;
@@ -74,7 +102,8 @@ namespace FilefisherWpf.ViewModels
         private string FormatDescription()
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"Path: {descriptor.FullPath}");
+            builder.AppendLine($"Full path: {descriptor.FullPath}");
+            builder.AppendLine($"Path: {descriptor.Path}");
             builder.AppendLine($"Size: {descriptor.FormatSize()}");
             builder.AppendLine($"Created: {descriptor.CreateTime:g}");
             builder.AppendLine($"Modified: {descriptor.ModifyTime:g}");
@@ -89,6 +118,17 @@ namespace FilefisherWpf.ViewModels
                 FormatReferenceDescriptors(descriptorLookup.LookupByContent(descriptor).ToList(), builder);
             }
             return builder.ToString();
+        }
+
+        public int GetReferenceCount()
+        {
+            var references = descriptorLookup.LookupByStat(descriptor)
+                .Concat(descriptorLookup.LookupByContent(descriptor))
+                .Select(x => x.FullPath)
+                .Distinct()
+                .ToList();
+            references.Remove(Path);
+            return references.Count;
         }
 
         private static void FormatReferenceDescriptors(IReadOnlyCollection<FileDescriptor> referenceDescriptors, StringBuilder builder)
@@ -129,22 +169,70 @@ namespace FilefisherWpf.ViewModels
 
     public class FolderViewModel : FileDescriptorViewModel
     {
+        private readonly IEnumerable<FileDescriptorViewModel> children;
+        private IEnumerable<FileDescriptorViewModel> filteredChildren;
+
         public FolderViewModel(FileDescriptor descriptor, DescriptorLookup lookup) : base(descriptor, lookup)
         {
-            Children = descriptor.Children.Select(CreateFileDescriptor);
+            filteredChildren = children = descriptor.Children.Select(CreateViewModel).ToList();
         }
-        private FileDescriptorViewModel CreateFileDescriptor(FileDescriptor fileDescriptor)
+        private FileDescriptorViewModel CreateViewModel(FileDescriptor fileDescriptor)
         {
             if (fileDescriptor.IsFolder) return new FolderViewModel(fileDescriptor, descriptorLookup);
             return new FileViewModel(fileDescriptor, descriptorLookup);
         }
-        public IEnumerable<FileDescriptorViewModel> Children { get; }
+
+        public IEnumerable<FileDescriptorViewModel> Children => filteredChildren;
+
+        public void UpdateFilter(IFileDescriptorFilter newFilter)
+        {
+            foreach (var child in children)
+            {
+                if (child is FolderViewModel folderChild)
+                {
+                    folderChild.UpdateFilter(newFilter);
+                }
+            }
+
+            filteredChildren = children.Where(newFilter.Pass).ToList();
+            NotifyPropertyChanged(nameof(Children));
+        }
     }
 
     public class FileViewModel : FileDescriptorViewModel
     {
         public FileViewModel(FileDescriptor descriptor, DescriptorLookup lookup) : base(descriptor, lookup)
         {
+        }
+    }
+
+    public interface IFileDescriptorFilter
+    {
+        bool Pass(FileDescriptorViewModel fileDescriptor);
+    }
+
+    public class ShowAllFileDescriptorFilter : IFileDescriptorFilter
+    {
+        public bool Pass(FileDescriptorViewModel fileDescriptor)
+        {
+            return true;
+        }
+    }
+
+    public class ShowDuplicatesFilter : IFileDescriptorFilter
+    {
+        public bool Pass(FileDescriptorViewModel fileDescriptor)
+        {
+            if (fileDescriptor is FolderViewModel folderViewModel)
+                return folderViewModel.Children.Any(Pass);
+            return fileDescriptor.GetReferenceCount() > 0;
+        }
+    }
+    public class ShowUniqueFilter : IFileDescriptorFilter
+    {
+        public bool Pass(FileDescriptorViewModel fileDescriptor)
+        {
+            return fileDescriptor.GetReferenceCount() == 0;
         }
     }
 }

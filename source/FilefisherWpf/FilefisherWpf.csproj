@@ -139,6 +139,21 @@
       <Name>FileScanner</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\textdoc.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\document.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\view.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\harddisk.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

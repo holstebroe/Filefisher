@@ -9,24 +9,39 @@ namespace FileScanner
 {
     public class VolumeInfo
     {
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern bool GetVolumeInformation(string volume, StringBuilder volumeName,
+            uint volumeNameSize, out uint serialNumber, out uint serialNumberLength,
+            out uint flags, StringBuilder fs, uint fsSize);
+
         public VolumeInfo(string path)
         {
-            var drive_letter = Path.GetPathRoot(path);
-            uint serial_number = 0;
-            uint max_component_length = 0;
-            StringBuilder sb_volume_name = new StringBuilder(256);
-            UInt32 file_system_flags = new UInt32();
-            StringBuilder sb_file_system_name = new StringBuilder(256);
+            var driveLetter = Path.GetPathRoot(path);
+            var volumeName = new StringBuilder(256);
+            var fileSystemName = new StringBuilder(256);
 
-            if (GetVolumeInformation(drive_letter, sb_volume_name,
-                (UInt32)sb_volume_name.Capacity, out serial_number, out max_component_length,
-                out file_system_flags, sb_file_system_name, (UInt32)sb_file_system_name.Capacity))
+            if (GetVolumeInformation(
+                driveLetter, 
+                volumeName,
+                (uint)volumeName.Capacity, 
+                out var serialNumber, 
+                out _,
+                out var fileSystemFlags, 
+                fileSystemName, 
+                (uint)fileSystemName.Capacity))
             {
-                VolumeName = sb_volume_name.ToString();
-                SerialNumber = serial_number.ToString();
-//                lblMaxComponentLength.Text = max_component_length.ToString();
-                FileSystem = sb_file_system_name.ToString();
-                Flags = "&&H" + file_system_flags.ToString("x");
+                VolumeName = volumeName.ToString();
+                SerialNumber = serialNumber.ToString();
+                FileSystem = fileSystemName.ToString();
+                Flags = "&&H" + fileSystemFlags.ToString("x");
+            }
+
+            var driveInfo = DriveInfo.GetDrives().FirstOrDefault(x => x.Name == driveLetter);
+            if (driveInfo != null)
+            {
+                DriveType = driveInfo.DriveType.ToString();
+                TotalSize = driveInfo.TotalSize;
+                TotalFreeSpace = driveInfo.TotalFreeSpace;
             }
 
         }
@@ -52,10 +67,10 @@ namespace FileScanner
 
         public string VolumeName { get; set; }
 
+        public string DriveType { get; set; }
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        private static extern bool GetVolumeInformation(string Volume, StringBuilder VolumeName,
-            uint VolumeNameSize, out uint SerialNumber, out uint SerialNumberLength,
-            out uint flags, StringBuilder fs, uint fs_size);
+        public long TotalSize { get; set; }
+
+        public long TotalFreeSpace { get; set; }
     }
 }
