@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Data;
 using System.Windows.Media;
 using FileScanner;
 
@@ -13,7 +13,7 @@ namespace FilefisherWpf.ViewModels
         private readonly MemoryFileDatabase database;
         private FileDescriptorViewModel selectedDescriptor;
         private MemoryFileDatabase referenceSystem;
-        private DescriptorLookup descriptorLookup = new DescriptorLookup();
+        private readonly DescriptorLookup descriptorLookup = new DescriptorLookup();
         private FilterMode filterMode;
 
         public FileSystemViewModel(MemoryFileDatabase database)
@@ -30,7 +30,7 @@ namespace FilefisherWpf.ViewModels
 
         public FileDescriptorViewModel SelectedDescriptor
         {
-            get { return selectedDescriptor; }
+            get => selectedDescriptor;
             set { selectedDescriptor = value; OnPropertyChanged();}
         }
 
@@ -150,6 +150,19 @@ namespace FilefisherWpf.ViewModels
         public string MultiLineDescription
         {
             get { return FormatDescription(); }
+        }
+
+        public string ImagePath       
+        {
+            get
+            {
+                var ext = System.IO.Path.GetExtension(Path);
+                if (ext == null) return null;
+                ext = ext.ToLower();
+                if (ext == ".jpg" || ext == ".png" || ext == ".gif" || ext == ".bmp" || ext == ".jpeg")
+                    return Path;
+                return null;
+            }
         }
 
         public Brush Color

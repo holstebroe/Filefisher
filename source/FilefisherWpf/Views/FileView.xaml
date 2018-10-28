@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FilefisherWpf.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" x:Name="Self">
-    <TextBlock TextWrapping="Wrap" Text="{Binding ElementName=Self, Path=ViewModel.MultiLineDescription}">
-            
-    </TextBlock>
+             d:DesignHeight="300" d:DesignWidth="300" x:Name="self">
+    <StackPanel DataContext="{Binding ElementName=self, Path=ViewModel}">
+        <TextBlock x:Name="description" TextWrapping="Wrap" Text="{Binding MultiLineDescription}"/>
+        <Image Source="{ Binding ImagePath}" Stretch="Uniform" Width="{Binding ElementName=description, Path=ActualWidth}"/>
+    </StackPanel>
 </UserControl>
