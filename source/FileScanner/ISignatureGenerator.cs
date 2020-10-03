@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace FileScanner
+﻿namespace FileScanner
 {
     /// <summary>
     /// Interface for signature generators that updates descriptor signatures

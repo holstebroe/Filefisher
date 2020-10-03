@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using FileScanner;
 using NUnit.Framework;
 
@@ -57,11 +56,68 @@ namespace FileScannerTest
         }
 
         [Test]
-        public void GetBasePathReturnsBasePath()
+        [TestCase(@"\Bar\Boo")]
+        [TestCase(@"\Bar\Boo.jpg")]
+        [TestCase(@"")]
+        public void GetBasePathReturnsBasePath(string localPath)
         {
-            var sut = new FileDescriptor(Environment.CurrentDirectory, Path.GetFullPath(TestResources.EinsteinJpegPath));
-            var actual = sut.GetBasePath();
-            Assert.That(actual, Is.EqualTo(Environment.CurrentDirectory));
+            var basePath = @"C:\Test\Foo";
+            Assert.That(new FileDescriptor(basePath, basePath + localPath).GetBasePath(), Is.EqualTo(basePath));
         }
-   }
+
+        [Test]
+        public void FolderPathIsRelativeToBasePath()
+        {
+            var basePath = @"C:\Test\Foo";
+            var sut = new FileDescriptor(basePath, @"C:\Test\Foo\Bar\Boo");
+            var actual = sut.Path;
+            Assert.That(actual, Is.EqualTo(@"Bar\Boo"));
+        }
+
+        [Test]
+        public void FilePathIsRelativeToBasePath()
+        {
+            var basePath = @"C:\Test\Foo";
+            var sut = new FileDescriptor(basePath, @"C:\Test\Foo\Boo\Bar.jpg");
+            var actual = sut.Path;
+            Assert.That(actual, Is.EqualTo(@"Boo\Bar.jpg"));
+        }
+
+        [Test]
+        public void RootPathIsEmpty()
+        {
+            var basePath = @"C:\Test\Foo";
+            var sut = new FileDescriptor(basePath, basePath);
+            var actual = sut.Path;
+            Assert.That(actual, Is.EqualTo(@""));
+        }
+
+        [Test]
+        public void IsRootTrueForRootPath()
+        {
+            var basePath = @"C:\Test\Foo";
+            var sut = new FileDescriptor(basePath, basePath);
+            var actual = sut.IsRoot;
+            Assert.That(actual, Is.True);
+        }
+
+
+        [Test]
+        public void FolderNameIsWithoutPath()
+        {
+            var basePath = @"C:\Test\Foo";
+            var sut = new FileDescriptor(basePath, @"C:\Test\Foo\Bar\Boo");
+            var actual = sut.Name;
+            Assert.That(actual, Is.EqualTo(@"Boo"));
+        }
+
+        [Test]
+        public void FileNameIsWithoutPath()
+        {
+            var basePath = @"C:\Test\Foo";
+            var sut = new FileDescriptor(basePath, @"C:\Test\Foo\Boo\Bar.jpg");
+            var actual = sut.Name;
+            Assert.That(actual, Is.EqualTo(@"Bar.jpg"));
+        }
+    }
 }

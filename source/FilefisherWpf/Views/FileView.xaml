@@ -9,5 +9,25 @@
     <StackPanel DataContext="{Binding ElementName=self, Path=ViewModel}">
         <TextBlock x:Name="description" TextWrapping="Wrap" Text="{Binding MultiLineDescription}"/>
         <Image Source="{ Binding ImagePath}" Stretch="Uniform" Width="{Binding ElementName=description, Path=ActualWidth}"/>
+        <GroupBox Header="Duplicates">
+        <ListView ItemsSource="{Binding Duplicates}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn Header="Path" DisplayMemberBinding="{Binding Descriptor.FullPath}"/>
+                            <GridViewColumn Header="Stat" DisplayMemberBinding="{Binding MatchStat}"/>
+                            <GridViewColumn Header="Content" DisplayMemberBinding="{Binding MatchContent}"/>
+                            <GridViewColumn Header="Delete">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding DeleteCommand}" Content="Delete"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        </GroupBox>
     </StackPanel>
 </UserControl>

@@ -19,8 +19,9 @@ namespace FileScanner
         public FileDescriptor(string basePath, string fullFilePath)
         {
             FullPath = fullFilePath;
-            Path = fullFilePath.Substring(basePath.Length);
+            Path = fullFilePath.Length > basePath.Length ? fullFilePath.Substring(basePath.Length + 1) : "";
             Name = System.IO.Path.GetFileName(fullFilePath);
+            IsRoot = basePath == fullFilePath;
         }
 
         public string FullPath { get; set; }
@@ -47,7 +48,7 @@ namespace FileScanner
 
         public string GetBasePath()
         {
-            return FullPath.Substring(0, FullPath.Length - Path.Length);
+            return Path == "" ? FullPath : FullPath.Substring(0, FullPath.Length - Path.Length - 1);
         }
 
         public string FormatSize()

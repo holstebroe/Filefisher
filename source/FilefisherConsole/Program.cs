@@ -13,6 +13,9 @@ using FileScanner.Duplicates;
 // -f C:\Temp\MyTrack --duplicateMode=Content --readcontent -d "c:\Temp\mytrack.fdb" -p
 // --duplicateMode=Content --fileduplicates -d "c:\Temp\dcim.fdb" -c "C:\ProgramData\Filefisher\3155494950_C__Users_Søren_Pictures.fdb"
 // --duplicateMode=Content --fileduplicates -d "c:\Temp\dcim.fdb" -c "C:\Temp\mytrack.fdb"
+// --readcontent -d "D:\Søren\Arkiv\hd_mamut\videos_mamut.fdb" -p -f "D:\Videos"
+// --readcontent -d "D:\Søren\Arkiv\hd08\projects.fdb" -p -f "F:\projects"
+
 
 
 namespace FilefisherConsole
@@ -35,7 +38,7 @@ namespace FilefisherConsole
                 : new NullProgressTracker();
 
 
-            if (File.Exists(options.DatabaseFile))
+            if (File.Exists(options.DatabaseFile) && string.IsNullOrEmpty(baseFolder))
             {
                 database = MemoryFileDatabase.Load(options.DatabaseFile);
             }
@@ -88,6 +91,13 @@ namespace FilefisherConsole
                 ? database 
                 : MemoryFileDatabase.Load(options.CompareDatabaseFile);
 
+            ShowDuplicates(options, databaseA, databaseB, duplicateComparer);
+            ShowUnique(options, databaseA, databaseB, duplicateComparer);
+        }
+
+        private static void ShowDuplicates(Options options, MemoryFileDatabase databaseA, MemoryFileDatabase databaseB,
+            IDuplicateComparer duplicateComparer)
+        {
             if (options.ShowFileDuplicates)
             {
                 Console.WriteLine("FILE DUPLICATES");
@@ -98,6 +108,7 @@ namespace FilefisherConsole
                 var duplicates = duplicateFinder.FindDuplicates(databaseA, databaseB);
                 PrintDuplicates(duplicates);
             }
+
             if (options.ShowTopDuplicates)
             {
                 Console.WriteLine("TOP DUPLICATES");
@@ -106,6 +117,29 @@ namespace FilefisherConsole
                 var duplicates = duplicateFinder.FindDuplicates(databaseA, databaseB);
                 PrintDuplicates(duplicates);
             }
+        }
+
+        private static void ShowUnique(Options options, MemoryFileDatabase databaseA, MemoryFileDatabase databaseB, IDuplicateComparer duplicateComparer)
+        {
+            if (options.ShowOnlyInDatabase)
+            {
+                Console.WriteLine("ONLY IN DATABASE");
+                Console.WriteLine("---------------");
+                Console.WriteLine($"Files in {databaseA.RootDescriptor.Path}: {databaseA.GetAllDescriptors()}");
+                Console.WriteLine($"Files in {databaseB.RootDescriptor.Path}: {databaseB.GetAllDescriptors()}");
+                var duplicateFinder = new FileDuplicateFinder(duplicateComparer);
+                var uniqInA = duplicateFinder.FindUniqueA(databaseA, databaseB);
+                foreach (var fileDescriptor in uniqInA)
+                {
+                    PrintDescriptor(fileDescriptor);
+                }
+
+            }
+        }
+
+        private static void PrintDescriptor(FileDescriptor fileDescriptor)
+        {
+            Console.WriteLine($"{fileDescriptor.Path} {fileDescriptor.FormatSize()}");
         }
 
         private static FileDescriptor StatScanFolder(MemoryFileDatabase database, string baseFolder, IProgressTracker progressTracker)
@@ -230,6 +264,9 @@ namespace FilefisherConsole
 
         [Option("fileduplicates", HelpText = "Show all file duplicates.")]
         public bool ShowFileDuplicates { get; set; }
+
+        [Option("onlyindatabase", HelpText = "Show all files only in database, but not in compare database.")]
+        public bool ShowOnlyInDatabase { get; set; }
 
         [Option("topduplicates", HelpText = "Show top most path duplicates.")]
         public bool ShowTopDuplicates { get; set; }

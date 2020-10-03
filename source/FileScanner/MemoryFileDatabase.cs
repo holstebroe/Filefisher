@@ -134,9 +134,23 @@ namespace FileScanner
                 using (var zipStream = new GZipStream(stream, CompressionMode.Decompress))
                 {
                     var formatter = new BinaryFormatter();
-                    return (MemoryFileDatabase) formatter.Deserialize(zipStream);
+                    var memoryFileDatabase = (MemoryFileDatabase) formatter.Deserialize(zipStream);
+                    if (memoryFileDatabase.RootDescriptor != null && memoryFileDatabase.RootDescriptor.Path != "")
+                        FixUpDescriptorPath(memoryFileDatabase.RootDescriptor.FullPath, memoryFileDatabase.RootDescriptor);
+                    return memoryFileDatabase;
                 }
             }
+        }
+
+        private static void FixUpDescriptorPath(string basePath, FileDescriptor descriptor)
+        {
+            var fullPath = descriptor.FullPath;
+            descriptor.Path = fullPath.Length > basePath.Length ? fullPath.Substring(basePath.Length + 1) : "";
+            if (descriptor.Children != null)
+                foreach (var descriptorChild in descriptor.Children)
+                {
+                    FixUpDescriptorPath(basePath, descriptorChild);
+                }
         }
     }
 }
