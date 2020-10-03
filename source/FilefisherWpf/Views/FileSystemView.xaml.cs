@@ -6,11 +6,24 @@ using FilefisherWpf.ViewModels;
 namespace FilefisherWpf.Views
 {
     /// <summary>
-    /// Interaction logic for FileSystemView.xaml
+    ///     Interaction logic for FileSystemView.xaml
     /// </summary>
-    public partial class FileSystemView : UserControl
+    public partial class FileSystemView
     {
-        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register("ViewModel", typeof(FileSystemViewModel), typeof(FileSystemView), new PropertyMetadata(default(FileSystemViewModel), PropertyChangedCallback));
+        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register("ViewModel",
+            typeof(FileSystemViewModel), typeof(FileSystemView),
+            new PropertyMetadata(default(FileSystemViewModel), PropertyChangedCallback));
+
+        public FileSystemView()
+        {
+            InitializeComponent();
+        }
+
+        public FileSystemViewModel ViewModel
+        {
+            get => (FileSystemViewModel) GetValue(ViewModelProperty);
+            set => SetValue(ViewModelProperty, value);
+        }
 
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -25,23 +38,8 @@ namespace FilefisherWpf.Views
         {
             if (ViewModel == null) return;
             if (ViewModel?.SelectedDescriptor != treeView.SelectedItem && ViewModel.SelectedDescriptor != null)
-            {
                 if (treeView.ItemContainerGenerator.ContainerFromItem(ViewModel.SelectedDescriptor) is TreeViewItem tvi)
-                {
                     tvi.IsSelected = true;
-                }
-            }
-        }
-
-        public FileSystemView()
-        {
-            InitializeComponent();
-        }
-
-        public FileSystemViewModel ViewModel
-        {
-            get { return (FileSystemViewModel) GetValue(ViewModelProperty); }
-            set { SetValue(ViewModelProperty, value); }
         }
 
         private void TreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -49,7 +47,5 @@ namespace FilefisherWpf.Views
             if (ViewModel == null) return;
             ViewModel.SelectedDescriptor = (FileDescriptorViewModel) e.NewValue;
         }
-
-
     }
 }

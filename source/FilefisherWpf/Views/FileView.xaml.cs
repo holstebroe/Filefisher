@@ -1,15 +1,15 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 using FilefisherWpf.ViewModels;
 
 namespace FilefisherWpf.Views
 {
     /// <summary>
-    /// Interaction logic for FileView.xaml
+    ///     Interaction logic for FileView.xaml
     /// </summary>
-    public partial class FileView : UserControl
+    public partial class FileView
     {
-        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register("ViewModel", typeof(FileViewModel), typeof(FileView), new PropertyMetadata(default(FileViewModel)));
+        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register("ViewModel",
+            typeof(FileViewModel), typeof(FileView), new PropertyMetadata(default(FileViewModel)));
 
         public FileView()
         {
@@ -18,8 +18,8 @@ namespace FilefisherWpf.Views
 
         public FileViewModel ViewModel
         {
-            get { return (FileViewModel) GetValue(ViewModelProperty); }
-            set { SetValue(ViewModelProperty, value); }
+            get => (FileViewModel) GetValue(ViewModelProperty);
+            set => SetValue(ViewModelProperty, value);
         }
     }
 }

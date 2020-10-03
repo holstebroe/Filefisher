@@ -6,16 +6,17 @@ using System.Linq;
 namespace FileScanner
 {
     /// <summary>
-    /// The file crawler will traverse a file system tree and register all entries in a file database.
+    ///     The file crawler will traverse a file system tree and register all entries in a file database.
     /// </summary>
     public class FileCrawler
     {
-        private readonly IFileDatabase fileDatabase;
         private readonly IFileDescriptorProvider descriptorProvider;
-        private readonly ISignatureGenerator signatureGenerator;
+        private readonly IFileDatabase fileDatabase;
         private readonly IProgressTracker progressTracker;
+        private readonly ISignatureGenerator signatureGenerator;
 
-        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider, ISignatureGenerator signatureGenerator, IProgressTracker progressTracker)
+        public FileCrawler(IFileDatabase fileDatabase, IFileDescriptorProvider descriptorProvider,
+            ISignatureGenerator signatureGenerator, IProgressTracker progressTracker)
         {
             this.fileDatabase = fileDatabase;
             this.descriptorProvider = descriptorProvider;
@@ -26,7 +27,7 @@ namespace FileScanner
         public FileDescriptor ScanDirectory(string baseDirectory)
         {
             var fullBasePath = Path.GetFullPath(baseDirectory);
-            var baseDescriptor = new FileDescriptor(baseDirectory, fullBasePath) { IsRoot = true, IsFolder = true};
+            var baseDescriptor = new FileDescriptor(baseDirectory, fullBasePath) {IsRoot = true, IsFolder = true};
             ScanDirectory(baseDescriptor);
             return baseDescriptor;
         }
@@ -49,6 +50,7 @@ namespace FileScanner
                     ScanSubDirectory(subDirectory);
                     subDescriptors.Add(subDirectory);
                 }
+
                 directoryDescriptor.Children = subDescriptors;
                 signatureGenerator.UpdateFolderSignature(directoryDescriptor);
                 UpdateFolderSize(directoryDescriptor);
@@ -77,10 +79,12 @@ namespace FileScanner
                     Console.WriteLine("Could not open {0}", descriptor.FullPath);
                     continue;
                 }
+
                 signatureGenerator.UpdateFileSignature(descriptor);
                 fileDatabase.UpdateDescriptor(descriptor);
                 progressTracker.Increment(descriptor.FullPath);
             }
+
             return descriptors;
         }
     }

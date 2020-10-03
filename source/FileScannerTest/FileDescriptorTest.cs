@@ -30,7 +30,7 @@ namespace FileScannerTest
 
             Assert.That(sut.Size, Is.EqualTo(0));
         }
- 
+
         [Test]
         public void ConstructorDoesNotSetCreateTime()
         {
@@ -52,7 +52,7 @@ namespace FileScannerTest
         {
             var sut = new FileDescriptor(TestResources.EinsteinJpegPath);
 
-            Assert.That(sut.ContentHash, Is.Null);            
+            Assert.That(sut.ContentHash, Is.Null);
         }
 
         [Test]

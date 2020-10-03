@@ -13,15 +13,18 @@ namespace FileScanner
 
     public class ConsoleProgressTracker : IProgressTracker
     {
-        private long maxCount;
         private readonly Stopwatch stopwatch = new Stopwatch();
-        private DateTime lastIncrement;
         private long counter;
+        private DateTime lastIncrement;
+        private long maxCount;
 
         public ConsoleProgressTracker(long maxCount = -1)
         {
             this.maxCount = maxCount;
         }
+
+
+        public TimeSpan Elapsed => stopwatch.Elapsed;
 
         public void Start()
         {
@@ -40,7 +43,7 @@ namespace FileScanner
         public void Stop()
         {
             stopwatch.Stop();
-            var itemsPerSecond = counter/stopwatch.Elapsed.TotalSeconds;
+            var itemsPerSecond = counter / stopwatch.Elapsed.TotalSeconds;
             Console.WriteLine();
             Console.WriteLine($"{counter} items in {stopwatch.Elapsed} ({itemsPerSecond:F1} items per second");
         }
@@ -50,25 +53,16 @@ namespace FileScanner
         {
             counter++;
             var now = DateTime.Now;
-            if (now - lastIncrement < TimeSpan.FromMilliseconds(200))
-            {
-                PrintCurrentProgress(currentItem);
-            }
+            if (now - lastIncrement < TimeSpan.FromMilliseconds(200)) PrintCurrentProgress(currentItem);
             lastIncrement = DateTime.Now;
         }
 
         private void PrintCurrentProgress(string currentItem)
         {
             var progress = $"{counter}";
-            if (maxCount >= 0)
-            {
-                progress = $"{counter}:{maxCount}";
-            }
+            if (maxCount >= 0) progress = $"{counter}:{maxCount}";
             Console.Write($"\r{progress} {currentItem}");
         }
-
-
-        public TimeSpan Elapsed => stopwatch.Elapsed;
     }
 
     public class NullProgressTracker : IProgressTracker

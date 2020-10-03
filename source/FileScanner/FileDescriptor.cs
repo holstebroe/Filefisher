@@ -14,8 +14,8 @@ namespace FileScanner
             FullPath = System.IO.Path.GetFullPath(relativeFilePath);
             Path = FullPath.Substring(FullPath.Length - relativeFilePath.Length);
             Name = System.IO.Path.GetFileName(Path);
-
         }
+
         public FileDescriptor(string basePath, string fullFilePath)
         {
             FullPath = fullFilePath;
@@ -53,12 +53,14 @@ namespace FileScanner
 
         public string FormatSize()
         {
-            StringBuilder sb = new StringBuilder(11);
+            var sb = new StringBuilder(11);
             StrFormatByteSize(Size, sb, sb.Capacity);
             return sb.ToString();
         }
+
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
-        private static extern long StrFormatByteSize(long fileSize, [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer, int bufferSize);
+        private static extern long StrFormatByteSize(long fileSize,
+            [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer, int bufferSize);
 
         public void UpdateFolderSize()
         {
@@ -66,11 +68,8 @@ namespace FileScanner
             if (Size != 0) return;
             if (IsFolder)
                 foreach (var descriptor in Children)
-                {
                     descriptor.UpdateFolderSize();
-                }
             Size = Children.Select(x => x.Size).Sum();
         }
-
     }
 }

@@ -25,6 +25,33 @@ namespace FilefisherWpf.ViewModels
         }
 
         public ICommand LoadFileSystemCommand { get; }
+
+        public FileSystemViewModel FileSystemViewModel
+        {
+            get => fileSystemViewModel;
+            set
+            {
+                fileSystemViewModel = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ICommand LoadReferenceSystemCommand { get; }
+
+        public IEnumerable<FilterItem> FilterItems { get; }
+
+        public FilterMode SelectedFilter
+        {
+            get => selectedFilter;
+            set
+            {
+                selectedFilter = value;
+                if (FileSystemViewModel != null)
+                    FileSystemViewModel.FilterMode = SelectedFilter;
+                OnPropertyChanged();
+            }
+        }
+
         private void LoadFileSystem()
         {
             var dialog = new OpenFileDialog();
@@ -36,25 +63,6 @@ namespace FilefisherWpf.ViewModels
                 FileSystemViewModel.UpdateReferenceSystem(database);
                 FileSystemViewModel.FilterMode = SelectedFilter;
             }
-        }
-
-        public FileSystemViewModel FileSystemViewModel
-        {
-            get { return fileSystemViewModel; }
-            set { fileSystemViewModel = value; OnPropertyChanged();}
-        }
-
-        public ICommand LoadReferenceSystemCommand { get; }
-
-        public IEnumerable<FilterItem> FilterItems { get; private set;}
-
-        public FilterMode SelectedFilter
-        {
-            get => selectedFilter;
-            set { selectedFilter = value;
-                if (FileSystemViewModel != null)
-                    FileSystemViewModel.FilterMode = SelectedFilter;
-                OnPropertyChanged();}
         }
 
         private void LoadReferenceSystem()
@@ -73,19 +81,19 @@ namespace FilefisherWpf.ViewModels
     {
         ShowAll,
         ShowDuplicates,
-        ShowUnique,
+        ShowUnique
     }
 
     public class FilterItem
 
     {
-        public string Text { get; private set; }
-        public object Value { get; private set; }
-
         public FilterItem(string text, object value)
         {
             Text = text;
             Value = value;
         }
+
+        public string Text { get; }
+        public object Value { get; }
     }
 }

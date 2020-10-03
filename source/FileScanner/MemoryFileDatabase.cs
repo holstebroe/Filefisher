@@ -7,7 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace FileScanner
 {
     /// <summary>
-    /// File database that will keep the entire database in memory.
+    ///     File database that will keep the entire database in memory.
     /// </summary>
     [Serializable]
     public class MemoryFileDatabase : IFileDatabase
@@ -18,22 +18,13 @@ namespace FileScanner
 
         public MemoryFileDatabase()
         {
-            
         }
+
         public MemoryFileDatabase(FileDescriptor rootDescriptor)
         {
             UpdateDescriptor(rootDescriptor);
             RootDescriptor = rootDescriptor;
             AddChildren(rootDescriptor);
-        }
-
-        private void AddChildren(FileDescriptor descriptor)
-        {
-            foreach (var child in descriptor.Children)
-            {
-                UpdateDescriptor(child);
-                AddChildren(child);
-            }
         }
 
 
@@ -64,21 +55,27 @@ namespace FileScanner
             return RootDescriptor;
         }
 
+        private void AddChildren(FileDescriptor descriptor)
+        {
+            foreach (var child in descriptor.Children)
+            {
+                UpdateDescriptor(child);
+                AddChildren(child);
+            }
+        }
+
         public IEnumerable<FileDescriptor> GetDeep(FileDescriptor descriptor)
         {
             yield return descriptor;
             foreach (var child in descriptor.Children)
             {
                 var childDescriptors = GetDeep(child);
-                foreach (var childDescriptor in childDescriptors)
-                {
-                    yield return childDescriptor;
-                }
+                foreach (var childDescriptor in childDescriptors) yield return childDescriptor;
             }
-        } 
+        }
 
         /// <summary>
-        /// Returns all file descriptors in the database.
+        ///     Returns all file descriptors in the database.
         /// </summary>
         public IEnumerable<FileDescriptor> GetAllDescriptors()
         {
@@ -86,7 +83,7 @@ namespace FileScanner
         }
 
         /// <summary>
-        /// Returns default path name of this database based on the root descriptor.
+        ///     Returns default path name of this database based on the root descriptor.
         /// </summary>
         public string GetDefaultDatabasePath()
         {
@@ -101,7 +98,7 @@ namespace FileScanner
         }
 
         /// <summary>
-        /// Saves database to default database file name. <seealso cref="GetDefaultDatabasePath"/>.
+        ///     Saves database to default database file name. <seealso cref="GetDefaultDatabasePath" />.
         /// </summary>
         public void SaveDefault()
         {
@@ -109,7 +106,7 @@ namespace FileScanner
         }
 
         /// <summary>
-        /// Saves database into specified filename.
+        ///     Saves database into specified filename.
         /// </summary>
         public void Save(string fileName)
         {
@@ -121,11 +118,12 @@ namespace FileScanner
                     formatter.Serialize(zipStream, this);
                 }
             }
+
             Console.WriteLine($"Saved database to {fileName}");
         }
 
         /// <summary>
-        /// Loads database from file.
+        ///     Loads database from file.
         /// </summary>
         public static MemoryFileDatabase Load(string fileName)
         {
@@ -136,7 +134,8 @@ namespace FileScanner
                     var formatter = new BinaryFormatter();
                     var memoryFileDatabase = (MemoryFileDatabase) formatter.Deserialize(zipStream);
                     if (memoryFileDatabase.RootDescriptor != null && memoryFileDatabase.RootDescriptor.Path != "")
-                        FixUpDescriptorPath(memoryFileDatabase.RootDescriptor.FullPath, memoryFileDatabase.RootDescriptor);
+                        FixUpDescriptorPath(memoryFileDatabase.RootDescriptor.FullPath,
+                            memoryFileDatabase.RootDescriptor);
                     return memoryFileDatabase;
                 }
             }
@@ -148,9 +147,7 @@ namespace FileScanner
             descriptor.Path = fullPath.Length > basePath.Length ? fullPath.Substring(basePath.Length + 1) : "";
             if (descriptor.Children != null)
                 foreach (var descriptorChild in descriptor.Children)
-                {
                     FixUpDescriptorPath(basePath, descriptorChild);
-                }
         }
     }
 }

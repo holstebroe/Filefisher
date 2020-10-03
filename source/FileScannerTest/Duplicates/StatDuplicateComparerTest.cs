@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FileScanner;
+﻿using FileScanner;
 using FileScanner.Duplicates;
 using NUnit.Framework;
 
@@ -15,7 +11,7 @@ namespace FileScannerTest.Duplicates
         public void SameFileIsNotDuplicate()
         {
             var sut = new StatDuplicateComparer();
-            var descriptor = new FileDescriptor(TestResources.TextFilePath) { StatHash = new byte[] { 1, 2, 3 } };
+            var descriptor = new FileDescriptor(TestResources.TextFilePath) {StatHash = new byte[] {1, 2, 3}};
             var actual = sut.Equals(descriptor, descriptor);
             Assert.That(actual, Is.False);
         }
@@ -24,8 +20,8 @@ namespace FileScannerTest.Duplicates
         public void SameStatHashAreDuplicates()
         {
             var sut = new StatDuplicateComparer();
-            var descriptorA = new FileDescriptor(TestResources.TextFilePath) { StatHash = new byte[] { 1, 1, 1 } };
-            var descriptorB = new FileDescriptor(TestResources.SubTextFilePath) { StatHash = new byte[] { 1, 1, 1 } };
+            var descriptorA = new FileDescriptor(TestResources.TextFilePath) {StatHash = new byte[] {1, 1, 1}};
+            var descriptorB = new FileDescriptor(TestResources.SubTextFilePath) {StatHash = new byte[] {1, 1, 1}};
             var actual = sut.Equals(descriptorA, descriptorB);
             Assert.That(actual, Is.True);
         }
@@ -34,8 +30,8 @@ namespace FileScannerTest.Duplicates
         public void DifferentStatHashAreNotDuplicates()
         {
             var sut = new StatDuplicateComparer();
-            var descriptorA = new FileDescriptor(TestResources.TextFilePath) { StatHash = new byte[] { 1, 1, 1 } };
-            var descriptorB = new FileDescriptor(TestResources.SubTextFilePath) { StatHash = new byte[] { 2, 2, 2 } };
+            var descriptorA = new FileDescriptor(TestResources.TextFilePath) {StatHash = new byte[] {1, 1, 1}};
+            var descriptorB = new FileDescriptor(TestResources.SubTextFilePath) {StatHash = new byte[] {2, 2, 2}};
             var actual = sut.Equals(descriptorA, descriptorB);
             Assert.That(actual, Is.False);
         }

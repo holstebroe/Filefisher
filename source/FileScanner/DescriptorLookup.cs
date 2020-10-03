@@ -6,8 +6,11 @@ namespace FileScanner
 {
     public class DescriptorLookup
     {
-        private readonly MultiValueDictionary<string, FileDescriptor> contentLookup = new MultiValueDictionary<string, FileDescriptor>();
-        private readonly MultiValueDictionary<string, FileDescriptor> statLookup = new MultiValueDictionary<string, FileDescriptor>();
+        private readonly MultiValueDictionary<string, FileDescriptor> contentLookup =
+            new MultiValueDictionary<string, FileDescriptor>();
+
+        private readonly MultiValueDictionary<string, FileDescriptor> statLookup =
+            new MultiValueDictionary<string, FileDescriptor>();
 
         public void Update(IEnumerable<FileDescriptor> fileDescriptors)
         {
@@ -40,12 +43,15 @@ namespace FileScanner
             var key = GetStatKeyOrNull(descriptor);
             return statLookup.TryGetValue(key, out var descriptors) ? descriptors : Enumerable.Empty<FileDescriptor>();
         }
+
         public IEnumerable<FileDescriptor> LookupByContent(FileDescriptor descriptor)
         {
             var key = GetContentKeyOrNull(descriptor);
             if (key == null)
                 return Enumerable.Empty<FileDescriptor>();
-            return contentLookup.TryGetValue(key, out var descriptors) ? descriptors : Enumerable.Empty<FileDescriptor>();
+            return contentLookup.TryGetValue(key, out var descriptors)
+                ? descriptors
+                : Enumerable.Empty<FileDescriptor>();
         }
     }
 }

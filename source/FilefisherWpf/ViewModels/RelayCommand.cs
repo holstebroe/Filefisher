@@ -6,25 +6,25 @@ using System.Windows.Input;
 namespace FilefisherWpf.ViewModels
 {
     /// <summary>
-    /// A command whose sole purpose is to 
-    /// relay its functionality to other
-    /// objects by invoking delegates. The
-    /// default return value for the CanExecute
-    /// method is 'true'.
+    ///     A command whose sole purpose is to
+    ///     relay its functionality to other
+    ///     objects by invoking delegates. The
+    ///     default return value for the CanExecute
+    ///     method is 'true'.
     /// </summary>
     public class RelayCommand : ICommand
     {
         #region Fields
 
-        readonly Action<object> execute;
-        readonly Predicate<object> canExecute;
+        private readonly Action<object> execute;
+        private readonly Predicate<object> canExecute;
 
         #endregion // Fields
 
         #region Constructors
 
         /// <summary>
-        /// Creates a new command that can always execute.
+        ///     Creates a new command that can always execute.
         /// </summary>
         /// <param name="execute">The execution logic.</param>
         public RelayCommand(Action<object> execute)
@@ -33,7 +33,7 @@ namespace FilefisherWpf.ViewModels
         }
 
         /// <summary>
-        /// Creates a new command that can always execute.
+        ///     Creates a new command that can always execute.
         /// </summary>
         public RelayCommand(Action execute)
             : this(x => execute(), null)
@@ -41,17 +41,16 @@ namespace FilefisherWpf.ViewModels
         }
 
         /// <summary>
-        /// Creates a new command.
+        ///     Creates a new command.
         /// </summary>
         public RelayCommand(Action execute, Func<bool> canExecute)
             : this(x => execute(), y => canExecute())
-        {            
+        {
         }
 
 
-
         /// <summary>
-        /// Creates a new command.
+        ///     Creates a new command.
         /// </summary>
         /// <param name="execute">The execution logic.</param>
         /// <param name="canExecute">The execution status logic.</param>
@@ -76,8 +75,8 @@ namespace FilefisherWpf.ViewModels
 
         public event EventHandler CanExecuteChanged
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
         }
 
         public void Execute(object parameter)
@@ -102,7 +101,7 @@ namespace FilefisherWpf.ViewModels
     }
 
     /// <summary>
-    /// A command that calls the specified delegate when the command is executed.
+    ///     A command that calls the specified delegate when the command is executed.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class DelegateCommand<T> : ICommand, IRaiseCanExecuteChanged
@@ -118,34 +117,21 @@ namespace FilefisherWpf.ViewModels
 
         public DelegateCommand(Action<T> executeMethod, Func<T, bool> canExecuteMethod)
         {
-            if ((executeMethod == null) && (canExecuteMethod == null))
-            {
+            if (executeMethod == null && canExecuteMethod == null)
                 throw new ArgumentNullException(nameof(executeMethod), @"Execute Method cannot be null");
-            }
             this.executeMethod = executeMethod;
             this.canExecuteMethod = canExecuteMethod;
         }
 
         public event EventHandler CanExecuteChanged
         {
-            add
-            {
-                CommandManager.RequerySuggested += value;
-            }
-            remove
-            {
-                CommandManager.RequerySuggested -= value;
-            }
-        }
-
-        public void RaiseCanExecuteChanged()
-        {
-            CommandManager.InvalidateRequerySuggested();
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
         }
 
         bool ICommand.CanExecute(object parameter)
         {
-            return !isExecuting && CanExecute((T)parameter);
+            return !isExecuting && CanExecute((T) parameter);
         }
 
         void ICommand.Execute(object parameter)
@@ -154,13 +140,18 @@ namespace FilefisherWpf.ViewModels
             try
             {
                 RaiseCanExecuteChanged();
-                Execute((T)parameter);
+                Execute((T) parameter);
             }
             finally
             {
                 isExecuting = false;
                 RaiseCanExecuteChanged();
             }
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
         }
 
         public bool CanExecute(T parameter)
@@ -199,9 +190,9 @@ namespace FilefisherWpf.ViewModels
 
     public interface IAsyncCommand<in T> : IRaiseCanExecuteChanged
     {
+        ICommand Command { get; }
         Task ExecuteAsync(T obj);
         bool CanExecute(object obj);
-        ICommand Command { get; }
     }
 
     public class AwaitableDelegateCommand : AwaitableDelegateCommand<object>, IAsyncCommand
@@ -253,24 +244,23 @@ namespace FilefisherWpf.ViewModels
 
         public bool CanExecute(object parameter)
         {
-            return !isExecuting && underlyingCommand.CanExecute((T)parameter);
-        }
-
-        public event EventHandler CanExecuteChanged
-        {
-            add { underlyingCommand.CanExecuteChanged += value; }
-            remove { underlyingCommand.CanExecuteChanged -= value; }
-        }
-
-        public async void Execute(object parameter)
-        {
-            await ExecuteAsync((T)parameter);
+            return !isExecuting && underlyingCommand.CanExecute((T) parameter);
         }
 
         public void RaiseCanExecuteChanged()
         {
             underlyingCommand.RaiseCanExecuteChanged();
         }
-    }
 
+        public event EventHandler CanExecuteChanged
+        {
+            add => underlyingCommand.CanExecuteChanged += value;
+            remove => underlyingCommand.CanExecuteChanged -= value;
+        }
+
+        public async void Execute(object parameter)
+        {
+            await ExecuteAsync((T) parameter);
+        }
+    }
 }

@@ -3,10 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FilefisherWpf"
         xmlns:views="clr-namespace:FilefisherWpf.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525"
-        x:Name="Self">
-    <views:MainView/>
+        x:Name="self">
+    <views:MainView />
 </Window>

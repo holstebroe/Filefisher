@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using FileScanner;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
@@ -27,10 +25,7 @@ namespace FileScannerTest
             fixture.Behaviors.Remove(fixture.Behaviors.OfType<ThrowingRecursionBehavior>().First());
             fixture.Behaviors.Add(new NullRecursionBehavior(2));
             var descriptors = fixture.CreateMany<FileDescriptor>().ToList();
-            foreach (var descriptor in descriptors)
-            {
-                sut.UpdateDescriptor(descriptor);               
-            }
+            foreach (var descriptor in descriptors) sut.UpdateDescriptor(descriptor);
             Assert.That(sut.GetAllDescriptors(), Is.EquivalentTo(descriptors));
         }
 
@@ -39,12 +34,12 @@ namespace FileScannerTest
         {
             var sut = new MemoryFileDatabase();
             var fda = new FileDescriptor("a");
-            var fdb = new FileDescriptor("b") { IsRoot = true};
+            var fdb = new FileDescriptor("b") {IsRoot = true};
             var fdc = new FileDescriptor("c");
             sut.UpdateDescriptor(fda);
             sut.UpdateDescriptor(fdb);
             sut.UpdateDescriptor(fdc);
-            
+
             Assert.That(sut.RootDescriptor, Is.EqualTo(fdb));
         }
 
@@ -52,8 +47,8 @@ namespace FileScannerTest
         public void UpdateDescriptorThrowsExceptionIfNewRootIsAssigned()
         {
             var sut = new MemoryFileDatabase();
-            var fda = new FileDescriptor("a") { IsRoot = true };
-            var fdb = new FileDescriptor("b") { IsRoot = true};
+            var fda = new FileDescriptor("a") {IsRoot = true};
+            var fdb = new FileDescriptor("b") {IsRoot = true};
             sut.UpdateDescriptor(fda);
             Assert.Throws<InvalidOperationException>(() => sut.UpdateDescriptor(fdb));
         }
@@ -62,7 +57,7 @@ namespace FileScannerTest
         public void UpdateDescriptorDoesNotThrowExceptionIfSameRootIsAssigned()
         {
             var sut = new MemoryFileDatabase();
-            var fda = new FileDescriptor("a") { IsRoot = true };
+            var fda = new FileDescriptor("a") {IsRoot = true};
             sut.UpdateDescriptor(fda);
             sut.UpdateDescriptor(fda);
         }
@@ -72,7 +67,7 @@ namespace FileScannerTest
         {
             var database = new MemoryFileDatabase();
             var fda = new FileDescriptor("a");
-            var fdb = new FileDescriptor("b") { IsRoot = true };
+            var fdb = new FileDescriptor("b") {IsRoot = true};
             var fdc = new FileDescriptor("c");
             database.UpdateDescriptor(fda);
             database.UpdateDescriptor(fdb);
@@ -84,7 +79,8 @@ namespace FileScannerTest
                 database.Save(fileName);
 
                 var sut = MemoryFileDatabase.Load(fileName);
-                Assert.That(sut.GetAllDescriptors().Select(x => x.Path), Is.EquivalentTo(database.GetAllDescriptors().Select(x => x.Path)));
+                Assert.That(sut.GetAllDescriptors().Select(x => x.Path),
+                    Is.EquivalentTo(database.GetAllDescriptors().Select(x => x.Path)));
                 Assert.That(sut.RootDescriptor.Path, Is.EquivalentTo(database.RootDescriptor.Path));
             }
             finally

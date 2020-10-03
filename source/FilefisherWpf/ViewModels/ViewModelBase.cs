@@ -6,26 +6,22 @@ using System.Runtime.CompilerServices;
 namespace FilefisherWpf.ViewModels
 {
     /// <summary>
-    /// Base class for all ViewModel classes in the application.
-    /// It provides support for property change notifications 
-    /// and has a DisplayName property.  This class is abstract.
+    ///     Base class for all ViewModel classes in the application.
+    ///     It provides support for property change notifications
+    ///     and has a DisplayName property.  This class is abstract.
     /// </summary>
     public abstract class ViewModelBase : INotifyPropertyChanged, IDisposable
     {
         #region Constructor
-
-        protected ViewModelBase()
-        {
-        }
 
         #endregion // Constructor
 
         #region DisplayName
 
         /// <summary>
-        /// Returns the user-friendly name of this object.
-        /// Child classes can set this property to a new value,
-        /// or override it to determine the value on-demand.
+        ///     Returns the user-friendly name of this object.
+        ///     Child classes can set this property to a new value,
+        ///     or override it to determine the value on-demand.
         /// </summary>
         public string DisplayName { get; protected set; }
 
@@ -34,9 +30,9 @@ namespace FilefisherWpf.ViewModels
         #region Debugging Aides
 
         /// <summary>
-        /// Warns the developer if this object does not have
-        /// a public property with the specified name. This 
-        /// method does not exist in a Release build.
+        ///     Warns the developer if this object does not have
+        ///     a public property with the specified name. This
+        ///     method does not exist in a Release build.
         /// </summary>
         [Conditional("DEBUG")]
         [DebuggerStepThrough]
@@ -55,10 +51,10 @@ namespace FilefisherWpf.ViewModels
         }
 
         /// <summary>
-        /// Returns whether an exception is thrown, or if a Debug.Fail() is used
-        /// when an invalid property name is passed to the VerifyPropertyName method.
-        /// The default value is false, but subclasses used by unit tests might 
-        /// override this property's getter to return true.
+        ///     Returns whether an exception is thrown, or if a Debug.Fail() is used
+        ///     when an invalid property name is passed to the VerifyPropertyName method.
+        ///     The default value is false, but subclasses used by unit tests might
+        ///     override this property's getter to return true.
         /// </summary>
         protected virtual bool ThrowOnInvalidPropertyName { get; private set; }
 
@@ -67,27 +63,27 @@ namespace FilefisherWpf.ViewModels
         #region INotifyPropertyChanged Members
 
         /// <summary>
-        /// Raised when a property on this object has a new value.
+        ///     Raised when a property on this object has a new value.
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
-        /// Raises this object's PropertyChanged event.
+        ///     Raises this object's PropertyChanged event.
         /// </summary>
         /// <param name="propertyName">The property that has a new value.</param>
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null)
             {
                 var e = new PropertyChangedEventArgs(propertyName);
                 handler(this, e);
             }
         }
-        
-        
+
+
         /// <summary>
-        /// Raises this object's PropertyChanged event.
+        ///     Raises this object's PropertyChanged event.
         /// </summary>
         /// <param name="propertyName">The property that has a new value.</param>
         protected void NotifyPropertyChanged(string propertyName)
@@ -96,7 +92,7 @@ namespace FilefisherWpf.ViewModels
             if (!string.IsNullOrEmpty(propertyName))
                 VerifyPropertyName(propertyName);
 
-            PropertyChangedEventHandler handler = PropertyChanged;
+            var handler = PropertyChanged;
             if (handler != null)
             {
                 var e = new PropertyChangedEventArgs(propertyName);
@@ -109,8 +105,8 @@ namespace FilefisherWpf.ViewModels
         #region IDisposable Members
 
         /// <summary>
-        /// Invoked when this object is being removed from the application
-        /// and will be subject to garbage collection.
+        ///     Invoked when this object is being removed from the application
+        ///     and will be subject to garbage collection.
         /// </summary>
         public void Dispose()
         {
@@ -118,8 +114,8 @@ namespace FilefisherWpf.ViewModels
         }
 
         /// <summary>
-        /// Child classes can override this method to perform 
-        /// clean-up logic, such as removing event handlers.
+        ///     Child classes can override this method to perform
+        ///     clean-up logic, such as removing event handlers.
         /// </summary>
         protected virtual void OnDispose()
         {
@@ -127,7 +123,7 @@ namespace FilefisherWpf.ViewModels
 
 #if DEBUG
         /// <summary>
-        /// Useful for ensuring that ViewModel objects are properly garbage collected.
+        ///     Useful for ensuring that ViewModel objects are properly garbage collected.
         /// </summary>
         ~ViewModelBase()
         {

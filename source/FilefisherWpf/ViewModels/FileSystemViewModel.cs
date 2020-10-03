@@ -14,10 +14,10 @@ namespace FilefisherWpf.ViewModels
     public class FileSystemViewModel : ViewModelBase
     {
         private readonly MemoryFileDatabase database;
-        private FileDescriptorViewModel selectedDescriptor;
-        private MemoryFileDatabase referenceSystem;
         private readonly DescriptorLookup descriptorLookup = new DescriptorLookup();
         private FilterMode filterMode;
+        private MemoryFileDatabase referenceSystem;
+        private FileDescriptorViewModel selectedDescriptor;
 
         public FileSystemViewModel(MemoryFileDatabase database)
         {
@@ -30,53 +30,19 @@ namespace FilefisherWpf.ViewModels
             DeleteSelectedCommand = new RelayCommand(DeleteSelected, CanDeleteSelected);
         }
 
-        private bool CanDeleteSelected()
-        {
-            return SelectedDescriptor is FileViewModel && SelectedDescriptor.Exists;
-        }
-
-        private void DeleteSelected()
-        {
-            if (SelectedDescriptor is FileViewModel fileViewModel)
-            {
-                var parent = fileViewModel.Parent;
-                FileDescriptorViewModel nextDescriptor = null;
-                // Select next
-                if (parent != null)
-                {
-                    nextDescriptor = parent.Children.SkipWhile(x => x != fileViewModel).Skip(1).FirstOrDefault();
-                }
-
-                fileViewModel.Delete();
-
-                if (parent != null)
-                    SelectedDescriptor = parent.Children.FirstOrDefault(x => x.Descriptor == nextDescriptor?.Descriptor);
-            }
-        }
-
         public IEnumerable<FolderViewModel> Folders { get; }
 
         public FileDescriptorViewModel SelectedDescriptor
         {
             get => selectedDescriptor;
-            set { selectedDescriptor = value; OnPropertyChanged();}
+            set
+            {
+                selectedDescriptor = value;
+                OnPropertyChanged();
+            }
         }
 
         public string RootInfo => FormatRootInfo(database.RootInfo);
-
-        private string FormatRootInfo(RootInfo rootInfo)
-        {
-            if (rootInfo == null) return "not loaded";
-            return $"{rootInfo.VolumeId}:{rootInfo.VolumeLabel}:{rootInfo.RootPath}";
-        }
-
-        public void UpdateReferenceSystem(MemoryFileDatabase system)
-        {
-            referenceSystem = system;
-            descriptorLookup.Update(referenceSystem.GetAllDescriptors());
-            NotifyPropertyChanged(nameof(ReferenceRootInfo));
-            NotifyPropertyChanged(nameof(Folders));
-        }
 
         public string ReferenceRootInfo => FormatRootInfo(referenceSystem?.RootInfo);
 
@@ -101,26 +67,65 @@ namespace FilefisherWpf.ViewModels
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+
                 Folders.Single().UpdateFilter(filter);
                 NotifyPropertyChanged(nameof(Folders));
             }
         }
 
         public ICommand DeleteSelectedCommand { get; }
+
+        private bool CanDeleteSelected()
+        {
+            return SelectedDescriptor is FileViewModel && SelectedDescriptor.Exists;
+        }
+
+        private void DeleteSelected()
+        {
+            if (SelectedDescriptor is FileViewModel fileViewModel)
+            {
+                var parent = fileViewModel.Parent;
+                FileDescriptorViewModel nextDescriptor = null;
+                // Select next
+                if (parent != null)
+                    nextDescriptor = parent.Children.SkipWhile(x => x != fileViewModel).Skip(1).FirstOrDefault();
+
+                fileViewModel.Delete();
+
+                if (parent != null)
+                    SelectedDescriptor =
+                        parent.Children.FirstOrDefault(x => x.Descriptor == nextDescriptor?.Descriptor);
+            }
+        }
+
+        private string FormatRootInfo(RootInfo rootInfo)
+        {
+            if (rootInfo == null) return "not loaded";
+            return $"{rootInfo.VolumeId}:{rootInfo.VolumeLabel}:{rootInfo.RootPath}";
+        }
+
+        public void UpdateReferenceSystem(MemoryFileDatabase system)
+        {
+            referenceSystem = system;
+            descriptorLookup.Update(referenceSystem.GetAllDescriptors());
+            NotifyPropertyChanged(nameof(ReferenceRootInfo));
+            NotifyPropertyChanged(nameof(Folders));
+        }
     }
 
     public class FileDescriptorViewModel : ViewModelBase
     {
-        public FileDescriptor Descriptor { get; }
-        protected DescriptorLookup descriptorLookup;
-        public FolderViewModel Parent { get; }
+        protected readonly DescriptorLookup descriptorLookup;
 
         protected FileDescriptorViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent)
         {
-            this.Descriptor = descriptor;
+            Descriptor = descriptor;
             descriptorLookup = lookup;
-            this.Parent = parent;
+            Parent = parent;
         }
+
+        public FileDescriptor Descriptor { get; }
+        public FolderViewModel Parent { get; }
 
         public string Name => Descriptor.Name;
         public string Path => Descriptor.FullPath;
@@ -133,84 +138,28 @@ namespace FilefisherWpf.ViewModels
 
         public bool Exists => File.Exists(Descriptor.FullPath);
 
-        private string FormatDescription()
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine($"Full path: {Descriptor.FullPath}");
-            builder.AppendLine($"Path: {Descriptor.Path}");
-            builder.AppendLine($"Size: {Descriptor.FormatSize()}");
-            builder.AppendLine($"Created: {Descriptor.CreateTime:g}");
-            builder.AppendLine($"Modified: {Descriptor.ModifyTime:g}");
-            builder.AppendLine($"Stat hash: {FormatHash(Descriptor.StatHash)}");
-            builder.AppendLine($"Content hash: {FormatHash(Descriptor.ContentHash)}");
-            if (descriptorLookup != null)
-            {
-                builder.AppendLine("References by stat:");
-                FormatReferenceDescriptors(ExceptThis(descriptorLookup.LookupByStat(Descriptor).DistinctBy(x => x.FullPath)).ToList(), builder);
-
-                builder.AppendLine("References by content:");
-                FormatReferenceDescriptors(ExceptThis(descriptorLookup.LookupByContent(Descriptor).DistinctBy(x => x.FullPath)).ToList(), builder);
-            }
-            return builder.ToString();
-        }
-
         public IEnumerable<FileDuplicateViewModel> Duplicates
         {
             get
             {
                 if (descriptorLookup == null) yield break;
                 var statDuplicates = descriptorLookup.LookupByStat(Descriptor).DistinctBy(x => x.FullPath).ToList();
-                var contentDuplicates = descriptorLookup.LookupByContent(Descriptor).DistinctBy(x => x.FullPath).ToList();
+                var contentDuplicates =
+                    descriptorLookup.LookupByContent(Descriptor).DistinctBy(x => x.FullPath).ToList();
                 var allDuplicates = statDuplicates.Concat(contentDuplicates).DistinctBy(x => x.FullPath);
                 var statDuplicatePaths = new HashSet<string>(statDuplicates.Select(x => x.FullPath));
                 var contentDuplicatePaths = new HashSet<string>(contentDuplicates.Select(x => x.FullPath));
 
                 foreach (var fileDescriptor in allDuplicates.Where(x => x.Size >= 0))
-                {
-                    yield return new FileDuplicateViewModel(fileDescriptor, statDuplicatePaths.Contains(fileDescriptor.FullPath), contentDuplicatePaths.Contains(fileDescriptor.FullPath));
-                }
+                    yield return new FileDuplicateViewModel(fileDescriptor,
+                        statDuplicatePaths.Contains(fileDescriptor.FullPath),
+                        contentDuplicatePaths.Contains(fileDescriptor.FullPath));
             }
         }
 
-        private IEnumerable<FileDescriptor> ExceptThis(IEnumerable<FileDescriptor> descriptors)
-        {
-            return descriptors.Where(other => other.FullPath != Descriptor.FullPath);
-        }
+        public string MultiLineDescription => FormatDescription();
 
-        public int GetReferenceCount()
-        {
-            var references = descriptorLookup.LookupByStat(Descriptor)
-                .Concat(descriptorLookup.LookupByContent(Descriptor))
-                .Where(x => x.Size > 0)
-                .Select(x => x.FullPath)
-                .Distinct()
-                .ToList();
-            references.Remove(Descriptor.FullPath);
-            return references.Count;
-        }
-
-        private static void FormatReferenceDescriptors(IReadOnlyCollection<FileDescriptor> referenceDescriptors, StringBuilder builder)
-        {
-            builder.AppendLine($"Matches: {referenceDescriptors.Count}");
-            if (referenceDescriptors.Count <= 50)
-                foreach (var referenceDescriptor in referenceDescriptors)
-                {
-                    builder.AppendLine($"Path: {referenceDescriptor.Path}");
-                }
-        }
-
-
-        private string FormatHash(byte[] hashSignature)
-        {
-            return hashSignature != null ? Convert.ToBase64String(hashSignature) : "<null>";
-        }
-
-        public string MultiLineDescription
-        {
-            get { return FormatDescription(); }
-        }
-
-        public string ImagePath       
+        public string ImagePath
         {
             get
             {
@@ -235,6 +184,64 @@ namespace FilefisherWpf.ViewModels
                 return Brushes.GreenYellow;
             }
         }
+
+        private string FormatDescription()
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"Full path: {Descriptor.FullPath}");
+            builder.AppendLine($"Path: {Descriptor.Path}");
+            builder.AppendLine($"Size: {Descriptor.FormatSize()}");
+            builder.AppendLine($"Created: {Descriptor.CreateTime:g}");
+            builder.AppendLine($"Modified: {Descriptor.ModifyTime:g}");
+            builder.AppendLine($"Stat hash: {FormatHash(Descriptor.StatHash)}");
+            builder.AppendLine($"Content hash: {FormatHash(Descriptor.ContentHash)}");
+            if (descriptorLookup != null)
+            {
+                builder.AppendLine("References by stat:");
+                FormatReferenceDescriptors(
+                    ExceptThis(descriptorLookup.LookupByStat(Descriptor).DistinctBy(x => x.FullPath)).ToList(),
+                    builder);
+
+                builder.AppendLine("References by content:");
+                FormatReferenceDescriptors(
+                    ExceptThis(descriptorLookup.LookupByContent(Descriptor).DistinctBy(x => x.FullPath)).ToList(),
+                    builder);
+            }
+
+            return builder.ToString();
+        }
+
+        private IEnumerable<FileDescriptor> ExceptThis(IEnumerable<FileDescriptor> descriptors)
+        {
+            return descriptors.Where(other => other.FullPath != Descriptor.FullPath);
+        }
+
+        public int GetReferenceCount()
+        {
+            var references = descriptorLookup.LookupByStat(Descriptor)
+                .Concat(descriptorLookup.LookupByContent(Descriptor))
+                .Where(x => x.Size > 0)
+                .Select(x => x.FullPath)
+                .Distinct()
+                .ToList();
+            references.Remove(Descriptor.FullPath);
+            return references.Count;
+        }
+
+        private static void FormatReferenceDescriptors(IReadOnlyCollection<FileDescriptor> referenceDescriptors,
+            StringBuilder builder)
+        {
+            builder.AppendLine($"Matches: {referenceDescriptors.Count}");
+            if (referenceDescriptors.Count <= 50)
+                foreach (var referenceDescriptor in referenceDescriptors)
+                    builder.AppendLine($"Path: {referenceDescriptor.Path}");
+        }
+
+
+        private string FormatHash(byte[] hashSignature)
+        {
+            return hashSignature != null ? Convert.ToBase64String(hashSignature) : "<null>";
+        }
     }
 
     public class FileDuplicateViewModel : ViewModelBase
@@ -247,6 +254,12 @@ namespace FilefisherWpf.ViewModels
             DeleteCommand = new RelayCommand(DeleteFile, CanDeleteFile);
         }
 
+        public ICommand DeleteCommand { get; }
+
+        public FileDescriptor Descriptor { get; }
+        public bool MatchStat { get; }
+        public bool MatchContent { get; }
+
         private bool CanDeleteFile()
         {
             return File.Exists(Descriptor.FullPath);
@@ -256,33 +269,28 @@ namespace FilefisherWpf.ViewModels
         {
             File.Delete(Descriptor.FullPath);
         }
-
-        public ICommand DeleteCommand { get; }
-
-        public FileDescriptor Descriptor { get; }
-        public bool MatchStat { get; }
-        public bool MatchContent { get; }
     }
 
     public class FolderViewModel : FileDescriptorViewModel
     {
         private readonly IList<FileDescriptorViewModel> children;
-        private ObservableCollection<FileDescriptorViewModel> filteredChildren;
         private IFileDescriptorFilter filter;
+        private ObservableCollection<FileDescriptorViewModel> filteredChildren;
 
-        public FolderViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent) : base(descriptor, lookup, parent)
+        public FolderViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent) : base(
+            descriptor, lookup, parent)
         {
             children = descriptor.Children.Select(CreateChildViewModel).ToList();
             filteredChildren = new ObservableCollection<FileDescriptorViewModel>(children);
         }
+
+        public IEnumerable<FileDescriptorViewModel> Children => filteredChildren;
+
         private FileDescriptorViewModel CreateChildViewModel(FileDescriptor fileDescriptor)
         {
             if (fileDescriptor.IsFolder) return new FolderViewModel(fileDescriptor, descriptorLookup, this);
             return new FileViewModel(fileDescriptor, descriptorLookup, this);
         }
-
-        public IEnumerable<FileDescriptorViewModel> Children => filteredChildren;
-
 
 
         public void UpdateFilter(IFileDescriptorFilter newFilter)
@@ -294,12 +302,8 @@ namespace FilefisherWpf.ViewModels
         public void Update()
         {
             foreach (var child in children)
-            {
                 if (child is FolderViewModel folderChild)
-                {
                     folderChild.UpdateFilter(filter);
-                }
-            }
 
             filteredChildren = new ObservableCollection<FileDescriptorViewModel>(children.Where(filter.Pass).ToList());
             NotifyPropertyChanged(nameof(Children));
@@ -315,8 +319,8 @@ namespace FilefisherWpf.ViewModels
 
     public class FileViewModel : FileDescriptorViewModel
     {
-
-        public FileViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent) : base(descriptor, lookup, parent)
+        public FileViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent) : base(
+            descriptor, lookup, parent)
         {
         }
 
@@ -328,13 +332,11 @@ namespace FilefisherWpf.ViewModels
             var duplicates = Duplicates.Select(x => x.Descriptor).ToList();
             var root = Parent;
             if (root != null)
-                while (root.Parent != null) root = root.Parent;
+                while (root.Parent != null)
+                    root = root.Parent;
 
             Parent.Remove(this);
-            foreach (var duplicate in duplicates)
-            {
-                FindAndUpdateDescriptor(root, duplicate);
-            }
+            foreach (var duplicate in duplicates) FindAndUpdateDescriptor(root, duplicate);
         }
 
         private void FindAndUpdateDescriptor(FolderViewModel node, FileDescriptor fileDescriptor)
@@ -347,6 +349,7 @@ namespace FilefisherWpf.ViewModels
                     child.Parent?.Update();
                     return;
                 }
+
                 if (child is FolderViewModel folderViewModel)
                     FindAndUpdateDescriptor(folderViewModel, fileDescriptor);
             }
@@ -376,6 +379,7 @@ namespace FilefisherWpf.ViewModels
             return fileDescriptor.GetReferenceCount() > 0;
         }
     }
+
     public class ShowUniqueFilter : IFileDescriptorFilter
     {
         public bool Pass(FileDescriptorViewModel fileDescriptor)
@@ -404,7 +408,7 @@ namespace FilefisherWpf.ViewModels
 
         public int GetHashCode(TA obj)
         {
-            if (Equals(obj, default(TA))) return 0;
+            if (Equals(obj, default)) return 0;
             var value = selector(obj);
             if (Equals(value, default(TB))) return 0;
             return value.GetHashCode();
@@ -419,8 +423,9 @@ namespace FilefisherWpf.ViewModels
         {
             return items.Distinct(new SelectorEqualityComparer<TItem, TKey>(keySelector));
         }
+
         /// <summary>
-        /// Filters a collection of items by another set using a specified comparison key selector.
+        ///     Filters a collection of items by another set using a specified comparison key selector.
         /// </summary>
         public static IEnumerable<TItem> ExceptBy<TItem, TKey>(this IEnumerable<TItem> items,
             IEnumerable<TItem> excludeSet, Func<TItem, TKey> keySelector)
@@ -429,7 +434,7 @@ namespace FilefisherWpf.ViewModels
         }
 
         /// <summary>
-        /// Filters a collection of items by a predicate. Same as negation of Where.
+        ///     Filters a collection of items by a predicate. Same as negation of Where.
         /// </summary>
         public static IEnumerable<TItem> Except<TItem>(this IEnumerable<TItem> items, Predicate<TItem> predicate)
         {

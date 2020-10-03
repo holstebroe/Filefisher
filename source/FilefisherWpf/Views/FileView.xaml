@@ -1,33 +1,34 @@
 ﻿<UserControl x:Class="FilefisherWpf.Views.FileView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:FilefisherWpf.Views"
-             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:FilefisherWpf.ViewModels"
+             mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300" x:Name="self">
     <StackPanel DataContext="{Binding ElementName=self, Path=ViewModel}">
-        <TextBlock x:Name="description" TextWrapping="Wrap" Text="{Binding MultiLineDescription}"/>
-        <Image Source="{ Binding ImagePath}" Stretch="Uniform" Width="{Binding ElementName=description, Path=ActualWidth}"/>
+        <TextBlock x:Name="description" TextWrapping="Wrap" Text="{Binding MultiLineDescription}" />
+        <Image Source="{ Binding ImagePath}" Stretch="Uniform"
+               Width="{Binding ElementName=description, Path=ActualWidth}" />
         <GroupBox Header="Duplicates">
-        <ListView ItemsSource="{Binding Duplicates}">
-            <ListView.View>
-                <GridView>
-                    <GridView.Columns>
-                        <GridViewColumn Header="Path" DisplayMemberBinding="{Binding Descriptor.FullPath}"/>
-                            <GridViewColumn Header="Stat" DisplayMemberBinding="{Binding MatchStat}"/>
-                            <GridViewColumn Header="Content" DisplayMemberBinding="{Binding MatchContent}"/>
+            <ListView ItemsSource="{Binding Duplicates}">
+                <ListView.View>
+                    <GridView>
+                        <GridView.Columns>
+                            <GridViewColumn Header="Path" DisplayMemberBinding="{Binding Descriptor.FullPath}" />
+                            <GridViewColumn Header="Stat" DisplayMemberBinding="{Binding MatchStat}" />
+                            <GridViewColumn Header="Content" DisplayMemberBinding="{Binding MatchContent}" />
                             <GridViewColumn Header="Delete">
                                 <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Command="{Binding DeleteCommand}" Content="Delete"/>
+                                    <DataTemplate DataType="viewModels:FileDuplicateViewModel">
+                                        <Button Command="{Binding DeleteCommand}" Content="Delete" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                    </GridView.Columns>
-                </GridView>
-            </ListView.View>
-        </ListView>
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </GroupBox>
     </StackPanel>
 </UserControl>

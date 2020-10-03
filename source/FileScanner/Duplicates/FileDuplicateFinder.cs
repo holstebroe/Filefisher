@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace FileScanner.Duplicates
@@ -18,10 +17,12 @@ namespace FileScanner.Duplicates
             var allADescriptors = databaseA.GetAll();
             var allBDescriptors = databaseB.GetAll();
 
-            var joinedDescriptors = allADescriptors.Join(allBDescriptors, x=>x, x => x, (fda, fdb) => new Duplicate(new [] {fda, fdb}), duplicateComparer);
+            var joinedDescriptors = allADescriptors.Join(allBDescriptors, x => x, x => x,
+                (fda, fdb) => new Duplicate(new[] {fda, fdb}), duplicateComparer);
 
             return joinedDescriptors.ToList();
         }
+
         public IEnumerable<FileDescriptor> FindUniqueA(IFileDatabase databaseA, IFileDatabase databaseB)
         {
             var allADescriptors = databaseA.GetAll();

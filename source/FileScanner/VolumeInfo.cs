@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,11 +7,6 @@ namespace FileScanner
 {
     public class VolumeInfo
     {
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        private static extern bool GetVolumeInformation(string volume, StringBuilder volumeName,
-            uint volumeNameSize, out uint serialNumber, out uint serialNumberLength,
-            out uint flags, StringBuilder fs, uint fsSize);
-
         public VolumeInfo(string path)
         {
             var driveLetter = Path.GetPathRoot(path);
@@ -21,14 +14,14 @@ namespace FileScanner
             var fileSystemName = new StringBuilder(256);
 
             if (GetVolumeInformation(
-                driveLetter, 
+                driveLetter,
                 volumeName,
-                (uint)volumeName.Capacity, 
-                out var serialNumber, 
+                (uint) volumeName.Capacity,
+                out var serialNumber,
                 out _,
-                out var fileSystemFlags, 
-                fileSystemName, 
-                (uint)fileSystemName.Capacity))
+                out var fileSystemFlags,
+                fileSystemName,
+                (uint) fileSystemName.Capacity))
             {
                 VolumeName = volumeName.ToString();
                 SerialNumber = serialNumber.ToString();
@@ -43,7 +36,6 @@ namespace FileScanner
                 TotalSize = driveInfo.TotalSize;
                 TotalFreeSpace = driveInfo.TotalFreeSpace;
             }
-
         }
 
         //private void Query(string path)
@@ -72,5 +64,10 @@ namespace FileScanner
         public long TotalSize { get; set; }
 
         public long TotalFreeSpace { get; set; }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern bool GetVolumeInformation(string volume, StringBuilder volumeName,
+            uint volumeNameSize, out uint serialNumber, out uint serialNumberLength,
+            out uint flags, StringBuilder fs, uint fsSize);
     }
 }

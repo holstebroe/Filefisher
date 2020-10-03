@@ -4,22 +4,22 @@ using System.Linq;
 namespace FileScanner.Duplicates
 {
     /// <summary>
-    /// Finds top-most duplicate in file hierarchy.
+    ///     Finds top-most duplicate in file hierarchy.
     /// </summary>
     /// <remarks>
-    /// Returns a folder pair if all children are duplicates.
-    /// Will not return child duplicates if parent is a duplicate.
+    ///     Returns a folder pair if all children are duplicates.
+    ///     Will not return child duplicates if parent is a duplicate.
     /// </remarks>
     public class TopDescriptorDuplicateFinder : IDuplicateFinder
     {
         private readonly IDuplicateComparer duplicateComparer;
 
-        public bool IgnoreEmptyFolders { get; set; } = true;
-
         public TopDescriptorDuplicateFinder(IDuplicateComparer duplicateComparer)
         {
             this.duplicateComparer = duplicateComparer;
         }
+
+        public bool IgnoreEmptyFolders { get; set; } = true;
 
         public IEnumerable<Duplicate> FindDuplicates(IFileDatabase databaseA, IFileDatabase databaseB)
         {
@@ -44,11 +44,10 @@ namespace FileScanner.Duplicates
                     yield break;
                 }
             }
+
             if (node.Children != null)
                 foreach (var duplicate in node.Children.SelectMany(x => CheckNode(x, lookupB)))
-                {
                     yield return duplicate;
-                }
         }
     }
 }

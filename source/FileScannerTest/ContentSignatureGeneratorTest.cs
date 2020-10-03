@@ -25,14 +25,14 @@ namespace FileScannerTest
         public void GeneratesFolderSignatureFromChildren()
         {
             var descriptor = new FileDescriptor("Folder")
+            {
+                IsFolder = true,
+                Children = new[]
                 {
-                    IsFolder = true,
-                    Children = new[]
-                        {
-                            new FileDescriptor("MyFileA.txt") {ContentHash = new byte[] {1, 2, 3}},
-                            new FileDescriptor("MyFileB.txt") {ContentHash = new byte[] {10, 20, 30}}
-                        }
-                };
+                    new FileDescriptor("MyFileA.txt") {ContentHash = new byte[] {1, 2, 3}},
+                    new FileDescriptor("MyFileB.txt") {ContentHash = new byte[] {10, 20, 30}}
+                }
+            };
 
             var sut = new ContentSignatureGenerator(new SHA1HashGenerator());
             sut.UpdateFolderSignature(descriptor);

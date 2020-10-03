@@ -6,11 +6,10 @@ using System.Linq;
 namespace FileScanner
 {
     /// <summary>
-    /// File descriptor provider that uses the operating file system
+    ///     File descriptor provider that uses the operating file system
     /// </summary>
     public class SystemFileDescriptorProvider : IFileDescriptorProvider
     {
-
         public IEnumerable<FileDescriptor> GetDirectories(FileDescriptor descriptor)
         {
             var directoryInfo = new DirectoryInfo(descriptor.FullPath);
@@ -28,7 +27,7 @@ namespace FileScanner
         }
 
         /// <summary>
-        /// Creates file descriptor with file system properties.
+        ///     Creates file descriptor with file system properties.
         /// </summary>
         private FileDescriptor CreateFileDescriptor(string basePath, FileInfo fileInfo)
         {
@@ -53,8 +52,8 @@ namespace FileScanner
         }
 
         /// <summary>
-        /// Updates file system properties for a file descriptor.
-        /// If the file descriptor is a folder, some properties will be based on sub-folders and files.
+        ///     Updates file system properties for a file descriptor.
+        ///     If the file descriptor is a folder, some properties will be based on sub-folders and files.
         /// </summary>
         private FileDescriptor CreateFolderDescriptor(string basePath, FileSystemInfo fileInfo)
         {
@@ -62,10 +61,9 @@ namespace FileScanner
             {
                 IsFolder = true,
                 CreateTime = fileInfo.CreationTimeUtc,
-                ModifyTime = fileInfo.LastWriteTimeUtc,
+                ModifyTime = fileInfo.LastWriteTimeUtc
             };
             return descriptor;
         }
-        
     }
 }

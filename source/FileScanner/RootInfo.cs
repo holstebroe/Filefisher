@@ -24,7 +24,8 @@ namespace FileScanner
 
         private string MakeValidFileName(string fileName)
         {
-            return string.Join("_", fileName.Split(Path.GetInvalidFileNameChars().Concat(Path.GetInvalidPathChars()).ToArray()));
+            return string.Join("_",
+                fileName.Split(Path.GetInvalidFileNameChars().Concat(Path.GetInvalidPathChars()).ToArray()));
             //string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string();
             //var r = new Regex($"[{Regex.Escape(regexSearch)}]");
             //return r.Replace(fileName, "");

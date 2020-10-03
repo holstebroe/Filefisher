@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using FileScanner;
 using FileScanner.Duplicates;
@@ -20,15 +19,16 @@ namespace FileScannerTest.Duplicates
             var actual = sut.FindDuplicates(dba, dbb);
             Assert.That(actual, Is.Empty);
         }
+
         [Test]
         public void DifferentDatabasesReturnsEmpty()
         {
             var dba = new MemoryFileDatabase();
-            dba.UpdateDescriptor(new FileDescriptor("A.txt") { StatHash = new byte[] { 1 } });
-            dba.UpdateDescriptor(new FileDescriptor("B.txt") { StatHash = new byte[] { 2 } });
+            dba.UpdateDescriptor(new FileDescriptor("A.txt") {StatHash = new byte[] {1}});
+            dba.UpdateDescriptor(new FileDescriptor("B.txt") {StatHash = new byte[] {2}});
             var dbb = new MemoryFileDatabase();
-            dbb.UpdateDescriptor(new FileDescriptor("C.txt") { StatHash = new byte[] { 3 } });
-            dbb.UpdateDescriptor(new FileDescriptor("D.txt") { StatHash = new byte[] { 4 } });
+            dbb.UpdateDescriptor(new FileDescriptor("C.txt") {StatHash = new byte[] {3}});
+            dbb.UpdateDescriptor(new FileDescriptor("D.txt") {StatHash = new byte[] {4}});
             var sut = new TopDescriptorDuplicateFinder(new StatDuplicateComparer());
 
             var actual = sut.FindDuplicates(dba, dbb);
@@ -54,8 +54,9 @@ namespace FileScannerTest.Duplicates
 
             var actual = sut.FindDuplicates(dba, dbb).ToList();
             Assert.That(actual, Has.Count.EqualTo(1));
-            Assert.That(actual.Single().Descriptors.Select(x => x.Name), Is.EqualTo(new [] {"C1", "C2"}));
+            Assert.That(actual.Single().Descriptors.Select(x => x.Name), Is.EqualTo(new[] {"C1", "C2"}));
         }
+
         [Test]
         public void FolderDuplicateReturnedForSelfFinding()
         {
@@ -65,45 +66,36 @@ namespace FileScannerTest.Duplicates
                     new FileDescriptorBuilder("D1", 4,
                         new FileDescriptorBuilder("E1", 5))),
                 new FileDescriptorBuilder("X", 10,
-                new FileDescriptorBuilder("B2", 11),
-                new FileDescriptorBuilder("C2", 3,
-                    new FileDescriptorBuilder("D2", 4,
-                        new FileDescriptorBuilder("E2", 5)))));
+                    new FileDescriptorBuilder("B2", 11),
+                    new FileDescriptorBuilder("C2", 3,
+                        new FileDescriptorBuilder("D2", 4,
+                            new FileDescriptorBuilder("E2", 5)))));
             var db = new MemoryFileDatabase(builder.Build());
             var sut = new TopDescriptorDuplicateFinder(new StatDuplicateComparer());
 
             var actual = sut.FindDuplicates(db, db).ToList();
             Assert.That(actual, Has.Count.EqualTo(1));
-            Assert.That(actual.Single().Descriptors.Select(x => x.Name), Is.EquivalentTo(new [] {"C1", "C2"}));
+            Assert.That(actual.Single().Descriptors.Select(x => x.Name), Is.EquivalentTo(new[] {"C1", "C2"}));
         }
     }
 
-    class FileDescriptorBuilder
+    internal class FileDescriptorBuilder
     {
+        private readonly List<FileDescriptorBuilder> children = new List<FileDescriptorBuilder>();
+        private readonly byte hash;
+        private readonly string name;
+
         public FileDescriptorBuilder(string name, byte hash, params FileDescriptorBuilder[] childBuilders)
         {
             this.name = name;
             this.hash = hash;
-            foreach (var child in childBuilders)
-            {
-                children.Add(child);
-            }
-        }
-
-        private readonly List<FileDescriptorBuilder> children = new List<FileDescriptorBuilder>();
-        private readonly string name;
-        private readonly byte hash;
-
-        public FileDescriptorBuilder AddChild(string childName, byte hash)
-        {
-            var builder = new FileDescriptorBuilder(childName, hash);
-            children.Add(builder);
-            return builder;
+            foreach (var child in childBuilders) children.Add(child);
         }
 
         public FileDescriptor Build()
         {
-            return new FileDescriptor(name) {IsFolder = children.Any(), StatHash = new [] {hash}, Children = children.Select(x => x.Build())};
+            return new FileDescriptor(name)
+                {IsFolder = children.Any(), StatHash = new[] {hash}, Children = children.Select(x => x.Build())};
         }
     }
 

@@ -3,8 +3,8 @@
 namespace FileScanner
 {
     /// <summary>
-    /// The file database contains various index structures for looking up files or folders based on different signatures,
-    /// such as name, stats or content hash.
+    ///     The file database contains various index structures for looking up files or folders based on different signatures,
+    ///     such as name, stats or content hash.
     /// </summary>
     public interface IFileDatabase
     {
@@ -12,5 +12,4 @@ namespace FileScanner
         IEnumerable<FileDescriptor> GetAll();
         FileDescriptor GetRoot();
     }
-
 }

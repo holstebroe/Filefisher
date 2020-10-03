@@ -1,32 +1,32 @@
 ﻿<UserControl x:Class="FilefisherWpf.Views.FileSystemView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:FilefisherWpf.Views"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:FilefisherWpf.ViewModels"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" x:Name="Self">
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300" x:Name="self">
     <UserControl.InputBindings>
-        <KeyBinding Key="Delete" Command="{Binding ElementName=Self, Path=ViewModel.DeleteSelectedCommand}"/>
+        <KeyBinding Key="Delete" Command="{Binding ElementName=self, Path=ViewModel.DeleteSelectedCommand}" />
     </UserControl.InputBindings>
-    <TreeView x:Name="treeView" DataContext="{Binding ElementName=Self, Path=ViewModel}" ItemsSource="{Binding Folders}" SelectedItemChanged="TreeView_OnSelectedItemChanged">
+    <TreeView x:Name="treeView" DataContext="{Binding ElementName=self, Path=ViewModel}"
+              ItemsSource="{Binding Folders}" SelectedItemChanged="TreeView_OnSelectedItemChanged">
         <TreeView.Resources>
-            <HierarchicalDataTemplate 
-                DataType="{x:Type viewModels:FolderViewModel}" 
+            <HierarchicalDataTemplate
+                DataType="{x:Type viewModels:FolderViewModel}"
                 ItemsSource="{Binding Children}">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
-                        <Image Width="16" Height="16" Source="../Images/folder.png"/>
-                        <TextBlock Margin="5,0,0,0" Text="{Binding Name}" Foreground="{Binding Color}"/>
+                        <Image Width="16" Height="16" Source="../Images/folder.png" />
+                        <TextBlock Margin="5,0,0,0" Text="{Binding Name}" Foreground="{Binding Color}" />
                     </StackPanel>
                 </StackPanel>
             </HierarchicalDataTemplate>
-            <DataTemplate 
-                DataType="{x:Type viewModels:FileViewModel}" >
+            <DataTemplate
+                DataType="{x:Type viewModels:FileViewModel}">
                 <StackPanel Orientation="Horizontal">
-                    <Image Width="16" Height="16" Source="../Images/document.png"/>
-                    <TextBlock Margin="5,0,0,0" Text="{Binding Name}" Foreground="{Binding Color}"/>
+                    <Image Width="16" Height="16" Source="../Images/document.png" />
+                    <TextBlock Margin="5,0,0,0" Text="{Binding Name}" Foreground="{Binding Color}" />
                 </StackPanel>
             </DataTemplate>
         </TreeView.Resources>
