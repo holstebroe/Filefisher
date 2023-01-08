@@ -5,12 +5,12 @@ using Microsoft.Win32;
 
 namespace FilefisherWpf.ViewModels
 {
-    public class MainViewModel : ViewModelBase
+    public class BrowseViewModel : ViewModelBase
     {
         private FileSystemViewModel fileSystemViewModel;
         private FilterMode selectedFilter;
 
-        public MainViewModel()
+        public BrowseViewModel()
         {
             LoadFileSystemCommand = new RelayCommand(LoadFileSystem);
             LoadReferenceSystemCommand = new RelayCommand(LoadReferenceSystem);

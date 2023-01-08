@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CommandLine;
@@ -44,7 +43,7 @@ namespace FilefisherConsole
                 {
                     var fullBaseFolder = Path.GetFullPath(baseFolder);
 
-                    rootDescriptor = StatScanFolder(database, fullBaseFolder, progressTracker);
+                    rootDescriptor = FileCrawler.StatScanFolder(database, fullBaseFolder, progressTracker);
                 }
                 else if (File.Exists(options.ScanFolder))
                 {
@@ -65,7 +64,7 @@ namespace FilefisherConsole
                 if (options.ReadContent)
                 {
                     progressTracker.Restart();
-                    UpdateContentSignatures(database, rootDescriptor, progressTracker);
+                    FileCrawler.UpdateContentSignaturesAsync(database, rootDescriptor, progressTracker).Wait();
                 }
 
                 if (!string.IsNullOrEmpty(options.DatabaseFile))
@@ -129,51 +128,6 @@ namespace FilefisherConsole
         private static void PrintDescriptor(FileDescriptor fileDescriptor)
         {
             Console.WriteLine($"{fileDescriptor.Path} {fileDescriptor.FormatSize()}");
-        }
-
-        private static FileDescriptor StatScanFolder(MemoryFileDatabase database, string baseFolder,
-            IProgressTracker progressTracker)
-        {
-            var volumeInfo = new VolumeInfo(baseFolder);
-            Console.WriteLine($"Name = {volumeInfo.VolumeName}, Serial = {volumeInfo.SerialNumber}");
-            database.RootInfo = new RootInfo
-            {
-                RootPath = baseFolder,
-                VolumeId = volumeInfo.SerialNumber,
-                VolumeLabel = volumeInfo.VolumeName,
-                FileSystem = volumeInfo.FileSystem,
-                DriveType = volumeInfo.DriveType,
-                TotalSize = volumeInfo.TotalSize,
-                TotalFreeSpace = volumeInfo.TotalFreeSpace
-            };
-            var signatureGenerator = new StatSignatureGenerator(new SHA1HashGenerator());
-            var crawler = new FileCrawler(database, new SystemFileDescriptorProvider(), signatureGenerator,
-                progressTracker);
-            var scanTimer = Stopwatch.StartNew();
-            var rootDescriptor = crawler.ScanDirectory(baseFolder);
-            scanTimer.Stop();
-            var descriptorCount = database.GetAllDescriptors().Count();
-            Console.WriteLine("Scanned {0} entries in {1}. {2} stat scans per second", descriptorCount,
-                scanTimer.Elapsed,
-                1000 * descriptorCount / scanTimer.ElapsedMilliseconds);
-            return rootDescriptor;
-        }
-
-        private static void UpdateContentSignatures(MemoryFileDatabase database, FileDescriptor rootDescriptor,
-            IProgressTracker progressTracker)
-        {
-            Console.WriteLine("Updating content signatures");
-            var contentCrawler = new FileCrawler(new NullFileDatabase(), new RevisitDescriptorProvider(),
-                new SampleSignatureGenerator(new SHA1HashGenerator()), progressTracker);
-            var contentTimer = Stopwatch.StartNew();
-            contentCrawler.ScanDirectory(rootDescriptor);
-            contentTimer.Stop();
-            var descriptorCount = database.GetAllDescriptors().Count();
-            //            PrintDescriptorTree(rootDescriptor, descriptor => descriptor.ContentHash);
-            //            PrintDuplicates(database, descriptor => descriptor.ContentHash);
-            Console.WriteLine("Calculated content signature for {0} entries in {1}. {2} files per second",
-                descriptorCount,
-                contentTimer.Elapsed, 1000 * descriptorCount / contentTimer.ElapsedMilliseconds);
         }
 
         private static void PrintDuplicates(IEnumerable<Duplicate> duplicates)

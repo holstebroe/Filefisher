@@ -5,7 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:FilefisherWpf.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525"
+        Title="FS Browser" Height="350" Width="525"
         x:Name="self">
-    <views:MainView />
+    <TabControl>
+        <TabItem Header="Browse">
+            <views:BrowseView />
+        </TabItem>
+        <TabItem Header="Scan">
+            <views:ScanView/>
+        </TabItem>
+    </TabControl>
 </Window>
