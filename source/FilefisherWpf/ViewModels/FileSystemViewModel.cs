@@ -116,15 +116,31 @@ namespace FilefisherWpf.ViewModels
     public class FileDescriptorViewModel : ViewModelBase
     {
         protected readonly DescriptorLookup descriptorLookup;
+        private FileDescriptor descriptor;
 
         protected FileDescriptorViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent)
         {
-            Descriptor = descriptor;
+            this.descriptor = descriptor;
             descriptorLookup = lookup;
             Parent = parent;
         }
 
-        public FileDescriptor Descriptor { get; }
+        public FileDescriptor Descriptor
+        {
+            get
+            {
+                return descriptor;
+            }
+            set
+            {
+                if (Equals(descriptor, value)) return;
+                descriptor = value;
+                NotifyPropertyChanged(nameof(MultiLineDescription));
+                OnPropertyChanged();
+            }
+            
+        }
+
         public FolderViewModel Parent { get; }
 
         public string Name => Descriptor.Name;
@@ -150,23 +166,31 @@ namespace FilefisherWpf.ViewModels
                 var statDuplicatePaths = new HashSet<string>(statDuplicates.Select(x => x.FullPath));
                 var contentDuplicatePaths = new HashSet<string>(contentDuplicates.Select(x => x.FullPath));
 
-                foreach (var fileDescriptor in allDuplicates.Where(x => x.Size >= 0))
+                var nonZeroDuplicates = allDuplicates.Where(x => x.Size >= 0).ToList();
+                foreach (var fileDescriptor in nonZeroDuplicates)
                     yield return new FileDuplicateViewModel(fileDescriptor,
                         statDuplicatePaths.Contains(fileDescriptor.FullPath),
-                        contentDuplicatePaths.Contains(fileDescriptor.FullPath));
+                        contentDuplicatePaths.Contains(fileDescriptor.FullPath),
+                        nonZeroDuplicates);
             }
         }
 
-        public string MultiLineDescription => FormatDescription();
+        public string MultiLineDescription => FormatDescription(Descriptor);
 
-        public string ImagePath
+        public string MediaPath
         {
             get
             {
                 var ext = System.IO.Path.GetExtension(Descriptor.FullPath);
                 if (ext == null) return null;
                 ext = ext.ToLower();
+
+                // Image
                 if (ext == ".jpg" || ext == ".png" || ext == ".gif" || ext == ".bmp" || ext == ".jpeg")
+                    return Descriptor.FullPath;
+
+                // Video
+                if (ext == ".mp4" || ext == ".wmv" || ext == ".mov" || ext == ".m2ts" || ext == ".mts")
                     return Descriptor.FullPath;
                 return null;
             }
@@ -185,26 +209,26 @@ namespace FilefisherWpf.ViewModels
             }
         }
 
-        private string FormatDescription()
+        private string FormatDescription(FileDescriptor fileDescriptor)
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"Full path: {Descriptor.FullPath}");
-            builder.AppendLine($"Path: {Descriptor.Path}");
-            builder.AppendLine($"Size: {Descriptor.FormatSize()}");
-            builder.AppendLine($"Created: {Descriptor.CreateTime:g}");
-            builder.AppendLine($"Modified: {Descriptor.ModifyTime:g}");
-            builder.AppendLine($"Stat hash: {FormatHash(Descriptor.StatHash)}");
-            builder.AppendLine($"Content hash: {FormatHash(Descriptor.ContentHash)}");
+            builder.AppendLine($"Full path: {fileDescriptor.FullPath}");
+            builder.AppendLine($"Path: {fileDescriptor.Path}");
+            builder.AppendLine($"Size: {fileDescriptor.FormatSize()}");
+            builder.AppendLine($"Created: {fileDescriptor.CreateTime:g}");
+            builder.AppendLine($"Modified: {fileDescriptor.ModifyTime:g}");
+            builder.AppendLine($"Stat hash: {FormatHash(fileDescriptor.StatHash)}");
+            builder.AppendLine($"Content hash: {FormatHash(fileDescriptor.ContentHash)}");
             if (descriptorLookup != null)
             {
                 builder.AppendLine("References by stat:");
                 FormatReferenceDescriptors(
-                    ExceptThis(descriptorLookup.LookupByStat(Descriptor).DistinctBy(x => x.FullPath)).ToList(),
+                    ExceptThis(descriptorLookup.LookupByStat(fileDescriptor).DistinctBy(x => x.FullPath)).ToList(),
                     builder);
 
                 builder.AppendLine("References by content:");
                 FormatReferenceDescriptors(
-                    ExceptThis(descriptorLookup.LookupByContent(Descriptor).DistinctBy(x => x.FullPath)).ToList(),
+                    ExceptThis(descriptorLookup.LookupByContent(fileDescriptor).DistinctBy(x => x.FullPath)).ToList(),
                     builder);
             }
 
@@ -246,8 +270,12 @@ namespace FilefisherWpf.ViewModels
 
     public class FileDuplicateViewModel : ViewModelBase
     {
-        public FileDuplicateViewModel(FileDescriptor descriptor, bool matchStat, bool matchContent)
+        private readonly IReadOnlyList<FileDescriptor> allDuplicates;
+
+        public FileDuplicateViewModel(FileDescriptor descriptor, bool matchStat, bool matchContent,
+            IReadOnlyList<FileDescriptor> allDuplicates)
         {
+            this.allDuplicates = allDuplicates;
             Descriptor = descriptor;
             MatchStat = matchStat;
             MatchContent = matchContent;
@@ -259,15 +287,18 @@ namespace FilefisherWpf.ViewModels
         public FileDescriptor Descriptor { get; }
         public bool MatchStat { get; }
         public bool MatchContent { get; }
+        public bool Exists => File.Exists(Descriptor.FullPath);
 
         private bool CanDeleteFile()
         {
-            return File.Exists(Descriptor.FullPath);
+            var existingDuplicates = allDuplicates.Count(x => File.Exists(x.FullPath));
+            return File.Exists(Descriptor.FullPath) && existingDuplicates > 1;
         }
 
         private void DeleteFile()
         {
             File.Delete(Descriptor.FullPath);
+            NotifyPropertyChanged(nameof(Exists));
         }
     }
 
@@ -319,9 +350,23 @@ namespace FilefisherWpf.ViewModels
 
     public class FileViewModel : FileDescriptorViewModel
     {
+        private FileDuplicateViewModel selectedDuplicate;
+
         public FileViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent) : base(
             descriptor, lookup, parent)
         {
+        }
+
+        public FileDuplicateViewModel SelectedDuplicate
+        {
+            get => selectedDuplicate;
+            set
+            {
+                if (Equals(selectedDuplicate, value)) return;
+                selectedDuplicate = value;
+                Descriptor = selectedDuplicate.Descriptor;
+                OnPropertyChanged();
+            }
         }
 
         public void Delete()

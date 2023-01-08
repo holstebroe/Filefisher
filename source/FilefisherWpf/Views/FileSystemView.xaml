@@ -10,7 +10,7 @@
         <KeyBinding Key="Delete" Command="{Binding ElementName=self, Path=ViewModel.DeleteSelectedCommand}" />
     </UserControl.InputBindings>
     <TreeView x:Name="treeView" DataContext="{Binding ElementName=self, Path=ViewModel}"
-              ItemsSource="{Binding Folders}" SelectedItemChanged="TreeView_OnSelectedItemChanged">
+              ItemsSource="{Binding Folders}" SelectedItemChanged="TreeView_OnSelectedItemChanged" KeyDown="TreeView_OnKeyDown">
         <TreeView.Resources>
             <HierarchicalDataTemplate
                 DataType="{x:Type viewModels:FolderViewModel}"

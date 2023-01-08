@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using FilefisherWpf.ViewModels;
 
 namespace FilefisherWpf.Views
@@ -46,6 +48,25 @@ namespace FilefisherWpf.Views
         {
             if (ViewModel == null) return;
             ViewModel.SelectedDescriptor = (FileDescriptorViewModel) e.NewValue;
+        }
+
+        private void TreeView_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (ViewModel == null) return;
+            if (e.Key == Key.Delete)
+            {
+                if (ViewModel.SelectedDescriptor is FileDescriptorViewModel fileDescriptorViewModel)
+                {
+                    var firstDuplicate = fileDescriptorViewModel.Duplicates.FirstOrDefault();
+                    if (firstDuplicate != null)
+                    {
+                        if (firstDuplicate.DeleteCommand.CanExecute(null))
+                        {
+                            firstDuplicate.DeleteCommand.Execute(null);
+                        }
+                    }
+                }
+            }
         }
     }
 }

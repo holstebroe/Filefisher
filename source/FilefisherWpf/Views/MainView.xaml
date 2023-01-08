@@ -23,16 +23,30 @@
             <Button Grid.Row="1" Grid.Column="0" Command="{Binding LoadReferenceSystemCommand}">Load reference system</Button>
             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FileSystemViewModel.ReferenceRootInfo}" />
         </Grid>
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" />
-        <DockPanel>
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-                    <TextBlock Text="Filter" />
-                    <ComboBox Margin="5 0 0 0" ItemsSource="{Binding FilterItems}" SelectedValuePath="Value"
-                              DisplayMemberPath="Text" SelectedValue="{Binding SelectedFilter}" />
-                </StackPanel>
-                <ContentPresenter DockPanel.Dock="Right" Content="{Binding FileSystemViewModel.SelectedDescriptor}"
-                                  MinWidth="150">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.ColumnSpan="2" Grid.Row="0" Orientation="Horizontal" DockPanel.Dock="Top">
+                <TextBlock Text="Filter" />
+                <ComboBox Margin="5 0 0 0" ItemsSource="{Binding FilterItems}" SelectedValuePath="Value"
+                          DisplayMemberPath="Text" SelectedValue="{Binding SelectedFilter}" />
+            </StackPanel>
+
+            <local:FileSystemView Grid.Row="1" Grid.Column="0" ViewModel="{Binding FileSystemViewModel}" />
+
+            <GridSplitter Grid.Row="1" Grid.Column="1" Width="5"/>
+
+            <DockPanel Grid.Row="1" Grid.Column="2">
+                <ContentPresenter Content="{Binding FileSystemViewModel.SelectedDescriptor}" MinWidth="150">
                     <ContentPresenter.Resources>
                         <DataTemplate DataType="{x:Type viewModels:FileViewModel}">
                             <local:FileView ViewModel="{Binding}" />
@@ -42,8 +56,7 @@
                         </DataTemplate>
                     </ContentPresenter.Resources>
                 </ContentPresenter>
-                <local:FileSystemView ViewModel="{Binding FileSystemViewModel}" />
             </DockPanel>
-        </DockPanel>
+        </Grid>
     </DockPanel>
 </UserControl>
