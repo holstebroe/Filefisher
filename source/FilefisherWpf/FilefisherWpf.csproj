@@ -78,13 +78,32 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ViewModels\FileSystemDiffViewModel.cs" />
+    <Compile Include="ViewModels\FileDescriptorViewModel.cs" />
+    <Compile Include="ViewModels\FileDuplicateViewModel.cs" />
     <Compile Include="ViewModels\FileSystemViewModel.cs" />
     <Compile Include="ViewModels\BrowseViewModel.cs" />
+    <Compile Include="ViewModels\FileViewModel.cs" />
+    <Compile Include="ViewModels\FolderViewModel.cs" />
+    <Compile Include="ViewModels\IFileDescriptorFilter.cs" />
+    <Compile Include="ViewModels\IFilePreview.cs" />
+    <Compile Include="ViewModels\ImageFilePreview.cs" />
+    <Compile Include="ViewModels\LinqExtensions.cs" />
+    <Compile Include="ViewModels\MediaFilePreview.cs" />
     <Compile Include="ViewModels\ProgressTrackerViewModel.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
     <Compile Include="ViewModels\ScanViewModel.cs" />
+    <Compile Include="ViewModels\SelectorEqualityComparer.cs" />
+    <Compile Include="ViewModels\ShowAllFileDescriptorFilter.cs" />
+    <Compile Include="ViewModels\ShowDuplicatesFilter.cs" />
+    <Compile Include="ViewModels\ShowUniqueFilter.cs" />
+    <Compile Include="ViewModels\TextFilePreview.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\DuplicatesListView.xaml.cs">
+      <DependentUpon>DuplicatesListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FileDescriptorView.xaml.cs">
+      <DependentUpon>FileDescriptorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FileSystemView.xaml.cs">
       <DependentUpon>FileSystemView.xaml</DependentUpon>
     </Compile>
@@ -112,6 +131,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\DuplicatesListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FileDescriptorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FileSystemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -9,6 +9,7 @@ namespace FilefisherWpf.ViewModels
     {
         private FileSystemViewModel fileSystemViewModel;
         private FilterMode selectedFilter;
+        private FileSystemViewModel referenceFileSystemViewModel;
 
         public BrowseViewModel()
         {
@@ -32,6 +33,17 @@ namespace FilefisherWpf.ViewModels
             set
             {
                 fileSystemViewModel = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public FileSystemViewModel ReferenceFileSystemViewModel
+        {
+            get => referenceFileSystemViewModel;
+            set
+            {
+                if (Equals(value, referenceFileSystemViewModel)) return;
+                referenceFileSystemViewModel = value;
                 OnPropertyChanged();
             }
         }
@@ -60,7 +72,16 @@ namespace FilefisherWpf.ViewModels
                 var databaseFile = dialog.FileName;
                 var database = MemoryFileDatabase.Load(databaseFile);
                 FileSystemViewModel = new FileSystemViewModel(database);
-                FileSystemViewModel.UpdateReferenceSystem(database);
+                if (ReferenceFileSystemViewModel == null)
+                {
+                    FileSystemViewModel.UpdateReferenceSystem(database);
+                    ReferenceFileSystemViewModel = new FileSystemViewModel(database);
+                }
+                else
+                {
+                    FileSystemViewModel.UpdateReferenceSystem(ReferenceFileSystemViewModel.Database);
+                }
+
                 FileSystemViewModel.FilterMode = SelectedFilter;
             }
         }
@@ -72,6 +93,7 @@ namespace FilefisherWpf.ViewModels
             {
                 var databaseFile = dialog.FileName;
                 var database = MemoryFileDatabase.Load(databaseFile);
+                ReferenceFileSystemViewModel = new FileSystemViewModel(database);
                 FileSystemViewModel.UpdateReferenceSystem(database);
             }
         }

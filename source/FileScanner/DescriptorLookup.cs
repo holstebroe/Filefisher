@@ -6,6 +6,9 @@ namespace FileScanner
 {
     public class DescriptorLookup
     {
+        // Ignore content matches for file sizes lower than this threshold.
+        private const long ContentFileSizeThreshold = 5;
+
         private readonly MultiValueDictionary<string, FileDescriptor> contentLookup =
             new MultiValueDictionary<string, FileDescriptor>();
 
@@ -23,7 +26,8 @@ namespace FileScanner
                 if (fileDescriptor.ContentHash != null)
                 {
                     var key = GetContentKeyOrNull(fileDescriptor);
-                    contentLookup.Add(key, fileDescriptor);
+                    if (key != null)
+                        contentLookup.Add(key, fileDescriptor);
                 }
             }
         }
@@ -33,8 +37,10 @@ namespace FileScanner
             return fileDescriptor.StatHash == null ? null : Convert.ToBase64String(fileDescriptor.StatHash);
         }
 
-        private static string GetContentKeyOrNull(FileDescriptor fileDescriptor)
+        private string GetContentKeyOrNull(FileDescriptor fileDescriptor)
         {
+            // Ignore tiny files.
+            if (fileDescriptor.Size < ContentFileSizeThreshold) return null;
             return fileDescriptor.ContentHash == null ? null : Convert.ToBase64String(fileDescriptor.ContentHash);
         }
 
