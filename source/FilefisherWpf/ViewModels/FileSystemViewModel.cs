@@ -34,6 +34,8 @@ namespace FilefisherWpf.ViewModels
             {
                 selectedDescriptor = value;
                 OnPropertyChanged();
+                if (selectedDescriptor != null)
+                    selectedDescriptor.SelectedDuplicate = selectedDescriptor.Duplicates.FirstOrDefault();
             }
         }
 
@@ -105,6 +107,11 @@ namespace FilefisherWpf.ViewModels
             descriptorLookup.Update(referenceSystem.GetAllDescriptors());
             NotifyPropertyChanged(nameof(ReferenceRootInfo));
             NotifyPropertyChanged(nameof(Folders));
+        }
+
+        public void Select(FileDescriptor descriptor)
+        {
+            SelectedDescriptor = Folders.Select(x => x.FindDescriptorViewModel(descriptor)).FirstOrDefault(x => x != null);
         }
     }
 }

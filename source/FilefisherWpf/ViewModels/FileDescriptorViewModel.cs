@@ -8,11 +8,12 @@ using FileScanner;
 
 namespace FilefisherWpf.ViewModels
 {
-    public class FileDescriptorViewModel : ViewModelBase
+    public abstract class FileDescriptorViewModel : ViewModelBase
     {
         protected readonly DescriptorLookup DescriptorLookup;
         private FileDescriptor descriptor;
         private FileDuplicateViewModel selectedDuplicate;
+        private bool isSelected;
 
         protected FileDescriptorViewModel(FileDescriptor descriptor, DescriptorLookup lookup, FolderViewModel parent)
         {
@@ -59,7 +60,7 @@ namespace FilefisherWpf.ViewModels
                 var statDuplicatePaths = new HashSet<string>(statDuplicates.Select(x => x.FullPath));
                 var contentDuplicatePaths = new HashSet<string>(contentDuplicates.Select(x => x.FullPath));
 
-                var nonZeroDuplicates = allDuplicates.Where(x => x.Size >= 0).ToList();
+                var nonZeroDuplicates = allDuplicates.Where(x => x.Size > 0).ToList();
                 foreach (var fileDescriptor in nonZeroDuplicates)
                     yield return new FileDuplicateViewModel(fileDescriptor,
                         statDuplicatePaths.Contains(fileDescriptor.FullPath),
@@ -75,7 +76,7 @@ namespace FilefisherWpf.ViewModels
             {
                 if (Equals(selectedDuplicate, value)) return;
                 selectedDuplicate = value;
-                Descriptor = selectedDuplicate?.Descriptor;
+//                Descriptor = selectedDuplicate?.Descriptor;
                 OnPropertyChanged();
             }
         }
@@ -123,6 +124,16 @@ namespace FilefisherWpf.ViewModels
             }
         }
 
+        public bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                if (value == isSelected) return;
+                isSelected = value;
+                OnPropertyChanged();
+            }
+        }
         private string FormatDescription(FileDescriptor fileDescriptor)
         {
             var builder = new StringBuilder();
